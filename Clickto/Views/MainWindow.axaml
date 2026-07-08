@@ -3,18 +3,198 @@
         xmlns:vm="using:Clickto.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d"
         x:Class="Clickto.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="Clickto">
+        Icon="/Assets/clickto.png"
+        Title="Clickto"
+        Width="440" Height="690"
+        CanResize="False"
+        RequestedThemeVariant="{Binding IsDark, Converter={x:Static vm:ThemeConverter.Instance}}"
+        Background="{DynamicResource Bg}">
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="Bg" Color="#0E1116"/>
+                    <SolidColorBrush x:Key="Surface" Color="#191D24"/>
+                    <SolidColorBrush x:Key="ButtonBg" Color="#2A2F3A"/>
+                    <SolidColorBrush x:Key="TextMain" Color="#E5E7EB"/>
+                    <SolidColorBrush x:Key="TextTitle" Color="#F9FAFB"/>
+                    <SolidColorBrush x:Key="TextMuted" Color="#5B6472"/>
+                    <SolidColorBrush x:Key="Divider" Color="#20252E"/>
+                    <SolidColorBrush x:Key="Accent" Color="#06B6D4"/>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="Bg" Color="#FFFFFF"/>
+                    <SolidColorBrush x:Key="Surface" Color="#FFFFFF"/>
+                    <SolidColorBrush x:Key="ButtonBg" Color="#EDF0F4"/>
+                    <SolidColorBrush x:Key="TextMain" Color="#111827"/>
+                    <SolidColorBrush x:Key="TextTitle" Color="#000000"/>
+                    <SolidColorBrush x:Key="TextMuted" Color="#9AA2AF"/>
+                    <SolidColorBrush x:Key="Divider" Color="#E6E9EE"/>
+                    <SolidColorBrush x:Key="Accent" Color="#0891B2"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector="TextBlock.section">
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="TextBlock.label">
+            <Setter Property="Foreground" Value="{DynamicResource TextMain}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Width" Value="100"/>
+        </Style>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="{DynamicResource ButtonBg}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMain}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="{DynamicResource Accent}"/>
+            <Setter Property="Foreground" Value="#04212A"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="Button.record">
+            <Setter Property="Background" Value="#EF4444"/>
+            <Setter Property="Foreground" Value="#2A0A0A"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="Button.danger">
+            <Setter Property="Background" Value="#B91C1C"/>
+            <Setter Property="Foreground" Value="#FEE2E2"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="Button.icon">
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+        <!-- Green flash on click (Save/Load/Delete) -->
+        <Style Selector="Button.flash">
+            <Setter Property="Background" Value="#22C55E"/>
+            <Setter Property="Foreground" Value="#052E14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="{DynamicResource Surface}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMain}"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="{DynamicResource Surface}"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+        <Style Selector="Border.divider">
+            <Setter Property="Height" Value="1"/>
+            <Setter Property="Background" Value="{DynamicResource Divider}"/>
+        </Style>
+    </Window.Styles>
+
+    <StackPanel Margin="20" Spacing="14">
+
+        <!-- Title row with theme toggle top-right -->
+        <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
+                <Image Source="/Assets/clickto.png" Width="42" Height="42" VerticalAlignment="Center"/>
+                <TextBlock FontSize="26" FontWeight="Bold" VerticalAlignment="Center">
+                    <Run Text="Click" Foreground="{DynamicResource TextTitle}"/><Run Text="to" Foreground="{DynamicResource Accent}"/>
+                </TextBlock>
+            </StackPanel>
+            <Button Grid.Column="1" Classes="icon"
+                    Content="{Binding IsDark, Converter={x:Static vm:ThemeIconConverter.Instance}}"
+                    Command="{Binding ToggleThemeCommand}"
+                    VerticalAlignment="Center"/>
+        </Grid>
+
+        <Border Classes="divider"/>
+
+        <!-- Playback -->
+        <TextBlock Classes="section" Text="PLAYBACK"/>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="label" Text="Repeat"/>
+            <ComboBox ItemsSource="{Binding LoopOptions}" SelectedItem="{Binding SelectedLoop}" Width="110"/>
+            <TextBox Text="{Binding CustomLoops}" Width="60" PlaceholderText="times" IsVisible="{Binding IsCustomLoop}"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="label" Text="Speed"/>
+            <ComboBox ItemsSource="{Binding SpeedOptions}" SelectedItem="{Binding SelectedSpeed}" Width="110"/>
+            <TextBox Text="{Binding CustomSpeed}" Width="60" PlaceholderText="x" IsVisible="{Binding IsCustomSpeed}"/>
+        </StackPanel>
+
+        <Border Classes="divider"/>
+
+        <!-- Hotkeys -->
+        <TextBlock Classes="section" Text="HOTKEYS"/>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="label" Text="Stop"/>
+            <TextBlock Text="{Binding StopKeyName}" Foreground="{DynamicResource Accent}" FontWeight="Bold" VerticalAlignment="Center" Width="60"/>
+            <Button Content="Set" Command="{Binding CaptureStopKeyCommand}"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="label" Text="Pause/Resume"/>
+            <TextBlock Text="{Binding PauseKeyName}" Foreground="{DynamicResource Accent}" FontWeight="Bold" VerticalAlignment="Center" Width="60"/>
+            <Button Content="Set" Command="{Binding CapturePauseKeyCommand}"/>
+        </StackPanel>
+
+        <Border Classes="divider"/>
+
+        <!-- Presets -->
+        <TextBlock Classes="section" Text="PRESETS"/>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="label" Text="Save as"/>
+            <TextBox Text="{Binding PresetName}" Width="110"/>
+            <Button Content="Save" Command="{Binding SavePresetCommand}"
+                    Classes.flash="{Binding SaveFlash}"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="label" Text="Load"/>
+            <ComboBox ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}" Width="110"/>
+            <Button Content="Load" Command="{Binding LoadPresetCommand}"
+                    Classes.flash="{Binding LoadFlash}"/>
+            <Button Content="Delete" Classes="danger" Command="{Binding DeletePresetCommand}"
+                    Classes.flash="{Binding DeleteFlash}"/>
+        </StackPanel>
+
+        <Border Classes="divider"/>
+
+        <!-- Loaded indicator -->
+        <TextBlock Foreground="{DynamicResource TextMuted}" FontSize="12">
+            <Run Text="Loaded:"/><Run Text=" "/><Run Text="{Binding LoadedCount}" Foreground="{DynamicResource Accent}" FontWeight="Bold"/><Run Text=" clicks"/>
+        </TextBlock>
+
+        <!-- Controls -->
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Classes="record" Content="● Record"
+                    Command="{Binding RecordCommand}" IsEnabled="{Binding !IsRecording}"/>
+            <Button Content="■ Stop Rec"
+                    Command="{Binding StopRecordingButtonCommand}" IsEnabled="{Binding IsRecording}"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Classes="primary" Content="► Start"
+                    Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}"/>
+            <Button Content="■ Stop"
+                    Command="{Binding StopCommand}" IsEnabled="{Binding IsRunning}"/>
+            <Border Width="6" CornerRadius="3" Background="{Binding StatusColor}" VerticalAlignment="Stretch"/>
+        </StackPanel>
+
+        <!-- Log -->
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <Border Width="4" CornerRadius="2" Background="{Binding StatusColor}" VerticalAlignment="Stretch"/>
+            <TextBlock Text="{Binding Log}" Foreground="{DynamicResource TextMuted}" FontFamily="monospace" TextWrapping="Wrap" VerticalAlignment="Center"/>
+        </StackPanel>
+
+    </StackPanel>
 
 </Window>

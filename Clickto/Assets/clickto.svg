@@ -1,0 +1,17 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E1116"/>
+      <stop offset="1" stop-color="#0A2A31"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1024" height="1024" rx="222" fill="url(#fg)"/>
+  <circle cx="512" cy="512" r="410" fill="none" stroke="#06B6D4" stroke-width="20" opacity="0.18"/>
+  <circle cx="512" cy="512" r="265" fill="none" stroke="#3B5563" stroke-width="26"/>
+  <line x1="512" y1="145" x2="512" y2="282" stroke="#3B5563" stroke-width="26" stroke-linecap="round"/>
+  <line x1="512" y1="742" x2="512" y2="879" stroke="#3B5563" stroke-width="26" stroke-linecap="round"/>
+  <line x1="145" y1="512" x2="282" y2="512" stroke="#3B5563" stroke-width="26" stroke-linecap="round"/>
+  <line x1="742" y1="512" x2="879" y2="512" stroke="#3B5563" stroke-width="26" stroke-linecap="round"/>
+  <circle cx="512" cy="512" r="43" fill="#06B6D4"/>
+  <path d="M572 572 L572 785 L623 734 L657 828 L697 810 L657 706 L727 706 Z" fill="#06B6D4"/>
+</svg>
