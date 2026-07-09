@@ -9,13 +9,14 @@
 #define AppPublisher   "TCW Studio"
 #define AppURL         "http://thetcwstudio.com/"
 #define AppExeName     "Clickto.exe"
+#define AppTagline     "Record. Replay. Repeat."
 ; ----------------------------------------------
 
 [Setup]
-; Unique per-app ID. Keep SAME across versions of Clickto; make a NEW one per new app.
 AppId={{B7C4E9A2-1D3F-4A6B-9C8E-2F5A7D1E0C3B}
 AppName={#AppName}
 AppVersion={#AppVersion}
+AppVerName={#AppName} {#AppVersion}
 AppPublisher={#AppPublisher}
 AppPublisherURL={#AppURL}
 AppSupportURL={#AppURL}
@@ -30,22 +31,33 @@ SetupIconFile=..\Clickto\Assets\clickto.ico
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
+WizardImageFile=banner.bmp
+WizardSmallImageFile=header.bmp
 UninstallDisplayIcon={app}\{#AppExeName}
 UninstallDisplayName={#AppName}
 ArchitecturesInstallIn64BitMode=x64compatible
-; Branding images
-WizardImageFile=banner.bmp
-WizardSmallImageFile=header.bmp
+; Custom window title and branding text
+AppComments={#AppTagline}
+SetupMutex={#AppName}SetupMutex
+WizardImageStretch=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
+
+; ---- Custom wording to make it feel unique ----
+[Messages]
+WelcomeLabel1=Welcome to {#AppName}
+WelcomeLabel2=This will install {#AppName} {#AppVersion} on your computer.%n%n{#AppTagline}%n%nA free tool by {#AppPublisher}. Click Next to continue.
+FinishedHeadingLabel=Clickto is ready
+FinishedLabel=Clickto has been installed. Thanks for trying it — made with care by TCW Studio.
+ClickNext=
+BeveledLabel={#AppPublisher} · thetcwstudio.com
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"; Flags: unchecked
 Name: "quicklaunchicon"; Description: "Create a Quick Launch shortcut"; GroupDescription: "Additional shortcuts:"; Flags: unchecked
 
 [Files]
-; The self-contained exe, pulled from the Windows build output folder.
 Source: "..\dist-win\{#AppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
