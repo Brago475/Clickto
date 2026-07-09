@@ -8,7 +8,7 @@
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/clickto.png"
         Title="Clickto"
-        Width="440" Height="690"
+        Width="440" Height="730"
         CanResize="False"
         RequestedThemeVariant="{Binding IsDark, Converter={x:Static vm:ThemeConverter.Instance}}"
         Background="{DynamicResource Bg}">
@@ -81,7 +81,6 @@
             <Setter Property="Padding" Value="8,6"/>
             <Setter Property="FontSize" Value="16"/>
         </Style>
-        <!-- Green flash on click (Save/Load/Delete) -->
         <Style Selector="Button.flash">
             <Setter Property="Background" Value="#22C55E"/>
             <Setter Property="Foreground" Value="#052E14"/>
@@ -131,6 +130,10 @@
             <TextBlock Classes="label" Text="Speed"/>
             <ComboBox ItemsSource="{Binding SpeedOptions}" SelectedItem="{Binding SelectedSpeed}" Width="110"/>
             <TextBox Text="{Binding CustomSpeed}" Width="60" PlaceholderText="x" IsVisible="{Binding IsCustomSpeed}"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="label" Text="Loop pauses"/>
+            <CheckBox IsChecked="{Binding RemoveDelays}"/>
         </StackPanel>
 
         <Border Classes="divider"/>

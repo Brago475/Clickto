@@ -6,7 +6,7 @@ namespace Clickto.Services;
 /// Controls the physical mouse on macOS via CoreGraphics.
 /// Uses P/Invoke to call native functions in ApplicationServices.
 /// </summary>
-public static class MouseService
+public class MacMouseService : IMouseService
 {
     // The CoreGraphics framework path on macOS.
     private const string CG = "/System/Library/Frameworks/ApplicationServices.framework/ApplicationServices";
@@ -44,7 +44,7 @@ public static class MouseService
     /// Performs a left click at the given screen coordinates.
     /// A click is a press (down) followed by a release (up).
     /// </summary>
-    public static void ClickAt(double x, double y)
+    public void ClickAt(double x, double y)
     {
         var point = new CGPoint(x, y);
 

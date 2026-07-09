@@ -11,7 +11,7 @@ namespace Clickto.Services;
 /// Records mouse clicks anywhere on screen using a global CoreGraphics event tap.
 /// Requires Input Monitoring permission on macOS.
 /// </summary>
-public class RecorderService
+public class MacRecorderService : IRecorderService
 {
     private const string CG = "/System/Library/Frameworks/ApplicationServices.framework/ApplicationServices";
     private const string CF = "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation";

@@ -47,6 +47,11 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private bool _deleteFlash;
 
+    // When true, loops flow into each other without the pause before the
+    // first click of each repeat. Recorded timing within the sequence is kept.
+    [ObservableProperty]
+    private bool _removeDelays;
+
     public bool CanStart => !IsRunning && !IsRecording;
 
     partial void OnIsRunningChanged(bool value) => OnPropertyChanged(nameof(CanStart));
@@ -55,12 +60,11 @@ public partial class MainWindowViewModel : ViewModelBase
     private CancellationTokenSource? _cts;
     private List<ClickStep> _steps = new();
 
-    private readonly RecorderService _recorder = new();
-    private readonly HotkeyService _hotkey = new();
+    private readonly IRecorderService _recorder = PlatformServices.CreateRecorder();
+    private readonly IHotkeyService _hotkey = PlatformServices.CreateHotkey();
+    private readonly IMouseService _mouse = PlatformServices.CreateMouse();
 
     private string? _pendingDelete;
-
-    // True when recording was stopped via the button (so we trim the button click).
     private bool _stoppedByButton;
 
     // --- Loop options ---
@@ -179,8 +183,6 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void HandleStopKey()
     {
-        // While recording, the Stop key ends the recording. A keypress is
-        // never captured as a click, so this avoids the phantom click.
         if (IsRecording)
         {
             StopRecording();
@@ -273,7 +275,8 @@ public partial class MainWindowViewModel : ViewModelBase
         int loops = ResolveLoopCount();
         double speed = ResolveSpeed();
         string loopText = loops == -1 ? "forever" : $"{loops} loop(s)";
-        Log = $"Started. {_steps.Count} steps, {loopText}, {speed}x speed. Stop={StopKeyName}, Pause={PauseKeyName}.";
+        string delayText = RemoveDelays ? "seamless loop" : "recorded timing";
+        Log = $"Started. {_steps.Count} steps, {loopText}, {speed}x speed, {delayText}. Stop={StopKeyName}, Pause={PauseKeyName}.";
 
         try
         {
@@ -282,8 +285,10 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 rep++;
 
-                foreach (var step in _steps)
+                for (int i = 0; i < _steps.Count; i++)
                 {
+                    var step = _steps[i];
+
                     if (token.IsCancellationRequested) break;
 
                     while (IsPaused && !token.IsCancellationRequested)
@@ -291,9 +296,17 @@ public partial class MainWindowViewModel : ViewModelBase
 
                     if (token.IsCancellationRequested) break;
 
-                    int delay = (int)(step.DelayMs / speed);
-                    await Task.Delay(delay, token);
-                    MouseService.ClickAt(step.X, step.Y);
+                    // Normally wait this step's recorded delay. When "Seamless
+                    // loop" is on, skip the delay before the first click of every
+                    // repeat after the first — that's the pause between loops.
+                    bool skipDelay = RemoveDelays && rep > 1 && i == 0;
+                    if (!skipDelay)
+                    {
+                        int delay = (int)(step.DelayMs / speed);
+                        await Task.Delay(delay, token);
+                    }
+
+                    _mouse.ClickAt(step.X, step.Y);
 
                     string label = loops == -1 ? $"loop {rep}" : $"loop {rep}/{loops}";
                     Log = $"{label}: clicked ({step.X}, {step.Y})";
@@ -334,8 +347,6 @@ public partial class MainWindowViewModel : ViewModelBase
         Log = $"Recording... click anywhere. Press {StopKeyName} or Stop Rec to finish.";
     }
 
-    // Called by the Stop Rec button. Flags that the final click is the button
-    // press itself so it can be trimmed.
     [RelayCommand]
     private void StopRecordingButton()
     {
@@ -350,7 +361,6 @@ public partial class MainWindowViewModel : ViewModelBase
         UpdateStatus();
         _steps = _recorder.Stop();
 
-        // If stopped via the button, drop the trailing click (the button press).
         if (_stoppedByButton && _steps.Count > 0)
             _steps.RemoveAt(_steps.Count - 1);
         _stoppedByButton = false;
@@ -367,7 +377,6 @@ public partial class MainWindowViewModel : ViewModelBase
         if (_steps.Count == 0) { Log = "Nothing to save — record some clicks first."; return; }
         if (string.IsNullOrWhiteSpace(PresetName)) { Log = "Enter a name for the preset."; return; }
 
-        // If the name is taken, find the next free "_N" suffix so nothing is overwritten.
         string name = PresetName;
         if (Presets.Contains(name))
         {

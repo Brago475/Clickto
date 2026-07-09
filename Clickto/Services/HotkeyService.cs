@@ -9,7 +9,7 @@ namespace Clickto.Services;
 /// keys (stop and pause) and fires the matching event. In capture mode it
 /// reports the next key pressed, so the UI can let the user set a key.
 /// </summary>
-public class HotkeyService
+public class MacHotkeyService : IHotkeyService
 {
     private const string CG = "/System/Library/Frameworks/ApplicationServices.framework/ApplicationServices";
     private const string CF = "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation";
