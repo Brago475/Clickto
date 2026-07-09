@@ -122,8 +122,8 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private string _pauseKeyName = "F9";
 
-    private long _stopKeyCode = 100;
-    private long _pauseKeyCode = 101;
+    private long _stopKeyCode = PlatformServices.DefaultStopKey();
+    private long _pauseKeyCode = PlatformServices.DefaultPauseKey();
     private string? _capturingFor;
 
     // --- Presets ---

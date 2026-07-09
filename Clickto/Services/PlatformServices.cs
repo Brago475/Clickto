@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace Clickto.Services;
 
 // Creates the correct platform-specific service implementations.
-// On macOS -> the Mac* classes. On Windows -> the Win* classes (added later).
+// On macOS -> the Mac* classes. On Windows -> the Win* classes.
 public static class PlatformServices
 {
     public static IMouseService CreateMouse()
@@ -33,4 +33,11 @@ public static class PlatformServices
             return new WinHotkeyService();
         throw new PlatformNotSupportedException("Unsupported OS.");
     }
+
+    // Default hotkey codes differ by platform (F8/F9 have different keycodes).
+    public static long DefaultStopKey()
+        => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 119 : 100;
+
+    public static long DefaultPauseKey()
+        => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 120 : 101;
 }
