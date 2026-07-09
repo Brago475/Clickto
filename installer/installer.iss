@@ -34,8 +34,8 @@ UninstallDisplayIcon={app}\{#AppExeName}
 UninstallDisplayName={#AppName}
 ArchitecturesInstallIn64BitMode=x64compatible
 ; Branding images
-WizardImageFile=wizard-banner.bmp
-WizardSmallImageFile=wizard-small.bmp
+WizardImageFile=banner.bmp
+WizardSmallImageFile=header.bmp
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
