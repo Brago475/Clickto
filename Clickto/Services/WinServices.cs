@@ -78,11 +78,28 @@ public class WinRecorderService : IRecorderService
 
     private const int WH_MOUSE_LL = 14;
     private const int WM_LBUTTONDOWN = 0x0201;
+    private const int WM_LBUTTONUP = 0x0202;
+    private const int WM_RBUTTONDOWN = 0x0204;
+    private const int WM_RBUTTONUP = 0x0205;
+    private const int WM_MBUTTONDOWN = 0x0207;
+    private const int WM_MBUTTONUP = 0x0208;
+    private const int WM_MOUSEWHEEL = 0x020A;
+
+    // One wheel notch, as reported in the high word of mouseData.
+    private const int WHEEL_DELTA = 120;
+
+    // Presses shorter than this are ordinary clicks, not deliberate holds.
+    private const int HoldThresholdMs = 250;
 
     private nint _hook = nint.Zero;
     private LowLevelMouseProc? _proc;
     private readonly List<ClickStep> _steps = new();
     private DateTime _lastClick;
+
+    // Tracks the press currently held down so the matching release can be
+    // turned into a hold duration on the step already recorded.
+    private DateTime _pressedAt;
+    private int _pendingIndex = -1;
 
     [StructLayout(LayoutKind.Sequential)]
     private struct POINT { public int x; public int y; }
@@ -114,6 +131,7 @@ public class WinRecorderService : IRecorderService
     public void Start()
     {
         _steps.Clear();
+        _pendingIndex = -1;
         _lastClick = DateTime.Now;
         _proc = HookCallback;
         _hook = SetWindowsHookEx(WH_MOUSE_LL, _proc, GetModuleHandle(null), 0);
@@ -124,17 +142,96 @@ public class WinRecorderService : IRecorderService
 
     private nint HookCallback(int nCode, nint wParam, nint lParam)
     {
-        if (nCode >= 0 && (int)wParam == WM_LBUTTONDOWN)
+        if (nCode >= 0)
         {
             var data = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
-            var now = DateTime.Now;
-            int delay = _steps.Count == 0 ? 0 : (int)(now - _lastClick).TotalMilliseconds;
-            _lastClick = now;
 
-            _steps.Add(new ClickStep { X = data.pt.x, Y = data.pt.y, DelayMs = delay });
-            ClickCaptured?.Invoke(_steps.Count);
+            switch ((int)wParam)
+            {
+                case WM_LBUTTONDOWN:
+                    RecordPress(data, MouseButton.Left);
+                    break;
+
+                case WM_RBUTTONDOWN:
+                    RecordPress(data, MouseButton.Right);
+                    break;
+
+                case WM_MBUTTONDOWN:
+                    RecordPress(data, MouseButton.Middle);
+                    break;
+
+                case WM_LBUTTONUP:
+                case WM_RBUTTONUP:
+                case WM_MBUTTONUP:
+                    RecordRelease();
+                    break;
+
+                case WM_MOUSEWHEEL:
+                    RecordScroll(data);
+                    break;
+            }
         }
+
         return CallNextHookEx(_hook, nCode, wParam, lParam);
+    }
+
+    private void RecordPress(MSLLHOOKSTRUCT data, MouseButton button)
+    {
+        var now = DateTime.Now;
+        int delay = _steps.Count == 0 ? 0 : (int)(now - _lastClick).TotalMilliseconds;
+        _lastClick = now;
+
+        _steps.Add(new ClickStep
+        {
+            X = data.pt.x,
+            Y = data.pt.y,
+            DelayMs = delay,
+            Type = ActionType.Click,
+            Button = button,
+            ClickCount = 1
+        });
+
+        _pendingIndex = _steps.Count - 1;
+        _pressedAt = now;
+
+        ClickCaptured?.Invoke(_steps.Count);
+    }
+
+    private void RecordRelease()
+    {
+        if (_pendingIndex < 0 || _pendingIndex >= _steps.Count) return;
+
+        int held = (int)(DateTime.Now - _pressedAt).TotalMilliseconds;
+        if (held >= HoldThresholdMs)
+            _steps[_pendingIndex].HoldMs = held;
+
+        // Time spent holding should not also count as the gap before the
+        // next action, so the delay clock restarts at the release.
+        _lastClick = DateTime.Now;
+        _pendingIndex = -1;
+    }
+
+    private void RecordScroll(MSLLHOOKSTRUCT data)
+    {
+        // The wheel delta lives in the high word of mouseData, signed.
+        short raw = (short)((data.mouseData >> 16) & 0xFFFF);
+        int notches = raw / WHEEL_DELTA;
+        if (notches == 0) return;
+
+        var now = DateTime.Now;
+        int delay = _steps.Count == 0 ? 0 : (int)(now - _lastClick).TotalMilliseconds;
+        _lastClick = now;
+
+        _steps.Add(new ClickStep
+        {
+            X = data.pt.x,
+            Y = data.pt.y,
+            DelayMs = delay,
+            Type = ActionType.Scroll,
+            ScrollAmount = notches
+        });
+
+        ClickCaptured?.Invoke(_steps.Count);
     }
 
     public List<ClickStep> Stop()
@@ -144,6 +241,7 @@ public class WinRecorderService : IRecorderService
             UnhookWindowsHookEx(_hook);
             _hook = nint.Zero;
         }
+        _pendingIndex = -1;
         return new List<ClickStep>(_steps);
     }
 }

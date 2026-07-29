@@ -495,6 +495,8 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void RefreshTimelineMeta()
     {
+        _clearArmed = false;
+
         for (int i = 0; i < Timeline.Count; i++)
             Timeline[i].Index = i;
 
@@ -1382,11 +1384,24 @@ public partial class MainWindowViewModel : ViewModelBase
         Log = $"Trimmed {removed} action(s) from the end.";
     }
 
+    // Set once Clear has been pressed, so a second press confirms.
+    private bool _clearArmed;
+
     [RelayCommand]
     private void ClearTimeline()
     {
         if (!CanEdit) return;
         if (Timeline.Count == 0) { Log = "Timeline is already empty."; return; }
+
+        // Clearing throws away unsaved work with no undo, so ask twice.
+        if (!_clearArmed)
+        {
+            _clearArmed = true;
+            Log = $"Click Clear again to discard all {Timeline.Count} actions.";
+            return;
+        }
+
+        _clearArmed = false;
         LoadTimeline(Array.Empty<ClickStep>());
         Log = "Timeline cleared.";
     }
