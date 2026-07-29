@@ -28,7 +28,24 @@ public partial class MainWindow : Window
 
         vm.RequestSavePath = SavePathAsync;
         vm.RequestOpenPath = OpenPathAsync;
+        vm.ResizeRequested += ApplySize;
         vm.OnWindowOpened();
+    }
+
+    /// <summary>Sets the window size without a binding writing back over it.</summary>
+    private void ApplySize(double width, double height)
+    {
+        Width = width;
+        Height = height;
+    }
+
+    /// <summary>Feeds real user resizes back so they can be remembered.</summary>
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+
+        if (DataContext is MainWindowViewModel vm)
+            vm.ReportWindowSize(Width, Height);
     }
 
     private static IReadOnlyList<FilePickerFileType> SequenceTypes { get; } = new[]

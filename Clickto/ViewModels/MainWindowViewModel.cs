@@ -247,18 +247,28 @@ public partial class MainWindowViewModel : ViewModelBase
 
         if (_loadingSettings) return;
 
-        // Each mode keeps its own remembered size, so switching back and
-        // forth does not throw away a window the user resized by hand.
+        // Save the size the mode we are leaving was using, before switching,
+        // otherwise the incoming mode's width gets written over it.
         if (value)
         {
-            WindowWidth = _settings.AdvancedWidth;
-            WindowHeight = _settings.AdvancedHeight;
+            _settings.SimpleWidth = WindowWidth;
+            _settings.SimpleHeight = WindowHeight;
         }
         else
         {
-            WindowWidth = _settings.SimpleWidth;
-            WindowHeight = _settings.SimpleHeight;
+            _settings.AdvancedWidth = WindowWidth;
+            _settings.AdvancedHeight = WindowHeight;
         }
+
+        // Each mode keeps its own remembered size, so switching back and
+        // forth does not throw away a window the user resized by hand.
+        // Guarded so the width setters do not persist a stale mode pairing.
+        _loadingSettings = true;
+        WindowWidth = value ? _settings.AdvancedWidth : _settings.SimpleWidth;
+        WindowHeight = value ? _settings.AdvancedHeight : _settings.SimpleHeight;
+        _loadingSettings = false;
+
+        ResizeRequested?.Invoke(WindowWidth, WindowHeight);
     }
 
     /// <summary>
@@ -714,6 +724,25 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public ObservableCollection<PresetEntry> PresetEntries { get; } = new();
 
+    public ObservableCollection<RunRecord> History { get; } = new();
+
+    public bool HasHistory => History.Count > 0;
+
+    private void RefreshHistory(IEnumerable<RunRecord> records)
+    {
+        History.Clear();
+        foreach (var record in records) History.Add(record);
+        OnPropertyChanged(nameof(HasHistory));
+    }
+
+    [RelayCommand]
+    private void ClearHistory()
+    {
+        RunHistory.Clear();
+        RefreshHistory(System.Array.Empty<RunRecord>());
+        Log = "Run history cleared.";
+    }
+
     [ObservableProperty]
     private PresetEntry? _selectedEntry;
 
@@ -762,6 +791,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         RebindHotkeys();
         RefreshPresets();
+        RefreshHistory(RunHistory.Load());
     }
 
     /// <summary>Routes a global hotkey to the right behaviour.</summary>
@@ -868,7 +898,17 @@ public partial class MainWindowViewModel : ViewModelBase
         WindowHeight = IsAdvanced ? _settings.AdvancedHeight : _settings.SimpleHeight;
         _loadingSettings = false;
 
+        ResizeRequested?.Invoke(WindowWidth, WindowHeight);
         _windowReady = true;
+    }
+
+    /// <summary>Called by the view after the user drags the window edge.</summary>
+    public void ReportWindowSize(double width, double height)
+    {
+        if (!_windowReady) return;
+
+        WindowWidth = width;
+        WindowHeight = height;
     }
 
     private void PersistSettingsHook() => PersistSettings();
@@ -1188,6 +1228,7 @@ public partial class MainWindowViewModel : ViewModelBase
         ActionsPerformed = 0;
         _lastX = -1;
         _lastY = -1;
+        var runStarted = DateTime.Now;
         var runClock = System.Diagnostics.Stopwatch.StartNew();
 
         // Captured once so editing the box mid-run cannot move the target.
@@ -1264,6 +1305,18 @@ public partial class MainWindowViewModel : ViewModelBase
 
         runClock.Stop();
         ElapsedText = runClock.Elapsed.ToString(@"mm\:ss");
+
+        RefreshHistory(RunHistory.Add(new RunRecord
+        {
+            PresetName = string.IsNullOrWhiteSpace(PresetName) ? "untitled" : PresetName,
+            StartedAt = runStarted,
+            DurationMs = (int)runClock.ElapsedMilliseconds,
+            Actions = ActionsPerformed,
+            Loops = CurrentLoop,
+            Outcome = token.IsCancellationRequested
+                ? "Stopped"
+                : stopReason != null ? "Limit reached" : "Finished"
+        }));
 
         IsRunning = false;
         IsPaused = false;
@@ -1693,6 +1746,14 @@ public partial class MainWindowViewModel : ViewModelBase
     /// Set by the view so the ViewModel can open file dialogs without
     /// referencing the window directly.
     /// </summary>
+    /// <summary>
+    /// Raised when the window should change size. The view handles this
+    /// directly, because a two way size binding fights the setter: the
+    /// window reports its real size back and overwrites the value we just
+    /// asked for.
+    /// </summary>
+    public event Action<double, double>? ResizeRequested;
+
     public Func<string, Task<string?>>? RequestSavePath { get; set; }
     public Func<Task<string?>>? RequestOpenPath { get; set; }
 

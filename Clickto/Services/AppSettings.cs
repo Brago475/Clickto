@@ -20,8 +20,8 @@ public class AppSettings
     // Window size per mode, so each remembers how the user left it.
     public double SimpleWidth { get; set; } = 700;
     public double SimpleHeight { get; set; } = 760;
-    public double AdvancedWidth { get; set; } = 1280;
-    public double AdvancedHeight { get; set; } = 860;
+    public double AdvancedWidth { get; set; } = 1180;
+    public double AdvancedHeight { get; set; } = 800;
 
     // Panels
     public bool ShowControlsPanel { get; set; } = true;
