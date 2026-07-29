@@ -632,7 +632,34 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private long _stopKeyCode = PlatformServices.DefaultStopKey();
     private long _pauseKeyCode = PlatformServices.DefaultPauseKey();
-    private string? _capturingFor;
+
+    // Which action the next captured key should be assigned to.
+    private HotkeyAction? _capturingAction;
+
+    [ObservableProperty]
+    private string _recordKeyName = "F6";
+
+    [ObservableProperty]
+    private string _stopRecKeyName = "F7";
+
+    [ObservableProperty]
+    private string _emergencyKeyName = "F10";
+
+    private long _recordKeyCode = IsWindows ? 117 : 97;      // F6
+    private long _stopRecKeyCode = IsWindows ? 118 : 98;     // F7
+    private long _emergencyKeyCode = IsWindows ? 121 : 109;  // F10
+
+    /// <summary>Current bindings, in the shape the hotkey service wants.</summary>
+    private Dictionary<HotkeyAction, long> BuildBindings() => new()
+    {
+        [HotkeyAction.Record] = _recordKeyCode,
+        [HotkeyAction.StopRecording] = _stopRecKeyCode,
+        [HotkeyAction.StartStop] = _stopKeyCode,
+        [HotkeyAction.PauseResume] = _pauseKeyCode,
+        [HotkeyAction.Emergency] = _emergencyKeyCode
+    };
+
+    private void RebindHotkeys() => _hotkey.StartListening(BuildBindings());
 
     // --- Presets ---
 
@@ -670,8 +697,8 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-        _hotkey.StopPressed += () => Dispatcher.UIThread.Post(HandleStopKey);
-        _hotkey.PausePressed += () => Dispatcher.UIThread.Post(HandlePauseKey);
+        _hotkey.ActionTriggered += action =>
+            Dispatcher.UIThread.Post(() => HandleHotkey(action));
         _hotkey.KeyCaptured += code => Dispatcher.UIThread.Post(() => HandleCapturedKey(code));
 
         _recorder.ClickCaptured += count => Dispatcher.UIThread.Post(() =>
@@ -694,8 +721,67 @@ public partial class MainWindowViewModel : ViewModelBase
         StopKeyName = KeyName(_stopKeyCode);
         PauseKeyName = KeyName(_pauseKeyCode);
 
-        _hotkey.StartListening(_stopKeyCode, _pauseKeyCode);
+        RecordKeyName = KeyName(_recordKeyCode);
+        StopRecKeyName = KeyName(_stopRecKeyCode);
+        EmergencyKeyName = KeyName(_emergencyKeyCode);
+
+        RebindHotkeys();
         RefreshPresets();
+    }
+
+    /// <summary>Routes a global hotkey to the right behaviour.</summary>
+    private void HandleHotkey(HotkeyAction action)
+    {
+        switch (action)
+        {
+            case HotkeyAction.Record:
+                if (!IsRecording && !IsRunning) Record();
+                break;
+
+            case HotkeyAction.StopRecording:
+                if (IsRecording) StopRecordingButton();
+                break;
+
+            case HotkeyAction.Emergency:
+                EmergencyStop();
+                break;
+
+            case HotkeyAction.PauseResume:
+                HandlePauseKey();
+                break;
+
+            default:
+                HandleStopKey();
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Halts everything immediately, whether recording or playing back. This
+    /// is the escape hatch when a fast macro has taken over the mouse.
+    /// </summary>
+    [RelayCommand]
+    private void EmergencyStop()
+    {
+        bool wasBusy = IsRunning || IsRecording;
+
+        _cts?.Cancel();
+
+        if (IsRecording)
+        {
+            IsRecording = false;
+            _recorder.Stop();
+        }
+
+        Countdown = 0;
+        IsRunning = false;
+        IsPaused = false;
+        PlayheadIndex = -1;
+        UpdateStatus();
+
+        Log = wasBusy
+            ? $"Emergency stop. Everything halted by {EmergencyKeyName}."
+            : "Nothing was running.";
     }
 
     partial void OnIsDarkChanged(bool value) => PersistSettings();
@@ -780,6 +866,9 @@ public partial class MainWindowViewModel : ViewModelBase
 
         _settings.StopKeyCode = _stopKeyCode;
         _settings.PauseKeyCode = _pauseKeyCode;
+        _settings.RecordKeyCode = _recordKeyCode;
+        _settings.StopRecKeyCode = _stopRecKeyCode;
+        _settings.EmergencyKeyCode = _emergencyKeyCode;
         _settings.PresetName = PresetName;
 
         // Window size belongs to whichever mode is showing right now.
@@ -831,6 +920,9 @@ public partial class MainWindowViewModel : ViewModelBase
         // platform default applies instead.
         if (_settings.StopKeyCode >= 0) _stopKeyCode = _settings.StopKeyCode;
         if (_settings.PauseKeyCode >= 0) _pauseKeyCode = _settings.PauseKeyCode;
+        if (_settings.RecordKeyCode >= 0) _recordKeyCode = _settings.RecordKeyCode;
+        if (_settings.StopRecKeyCode >= 0) _stopRecKeyCode = _settings.StopRecKeyCode;
+        if (_settings.EmergencyKeyCode >= 0) _emergencyKeyCode = _settings.EmergencyKeyCode;
 
         WindowWidth = IsAdvanced ? _settings.AdvancedWidth : _settings.SimpleWidth;
         WindowHeight = IsAdvanced ? _settings.AdvancedHeight : _settings.SimpleHeight;
@@ -929,31 +1021,67 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void HandleCapturedKey(long code)
     {
+        if (_capturingAction == null) return;
+
         var name = KeyName(code);
-        if (_capturingFor == "stop") { _stopKeyCode = code; StopKeyName = name; }
-        else if (_capturingFor == "pause") { _pauseKeyCode = code; PauseKeyName = name; }
-        _capturingFor = null;
+        var target = _capturingAction.Value;
+        _capturingAction = null;
 
-        _hotkey.StartListening(_stopKeyCode, _pauseKeyCode);
+        // Refuse a key that is already doing something else, otherwise one
+        // press would fire two actions and the second binding would be dead.
+        foreach (var pair in BuildBindings())
+        {
+            if (pair.Key != target && pair.Value == code)
+            {
+                Log = $"{name} is already assigned to {Describe(pair.Key)}.";
+                return;
+            }
+        }
+
+        switch (target)
+        {
+            case HotkeyAction.Record: _recordKeyCode = code; RecordKeyName = name; break;
+            case HotkeyAction.StopRecording: _stopRecKeyCode = code; StopRecKeyName = name; break;
+            case HotkeyAction.PauseResume: _pauseKeyCode = code; PauseKeyName = name; break;
+            case HotkeyAction.Emergency: _emergencyKeyCode = code; EmergencyKeyName = name; break;
+            default: _stopKeyCode = code; StopKeyName = name; break;
+        }
+
+        RebindHotkeys();
         PersistSettings();
-        Log = $"Stop = {StopKeyName}, Pause = {PauseKeyName}.";
+        Log = $"{Describe(target)} is now {name}.";
+    }
+
+    private static string Describe(HotkeyAction action) => action switch
+    {
+        HotkeyAction.Record => "Record",
+        HotkeyAction.StopRecording => "Stop recording",
+        HotkeyAction.PauseResume => "Pause / Resume",
+        HotkeyAction.Emergency => "Emergency stop",
+        _ => "Start / Stop"
+    };
+
+    private void BeginCapture(HotkeyAction action)
+    {
+        _capturingAction = action;
+        _hotkey.BeginCapture();
+        Log = $"Press any key to set {Describe(action)}...";
     }
 
     [RelayCommand]
-    private void CaptureStopKey()
-    {
-        _capturingFor = "stop";
-        _hotkey.BeginCapture();
-        Log = "Press any key to set STOP...";
-    }
+    private void CaptureRecordKey() => BeginCapture(HotkeyAction.Record);
 
     [RelayCommand]
-    private void CapturePauseKey()
-    {
-        _capturingFor = "pause";
-        _hotkey.BeginCapture();
-        Log = "Press any key to set PAUSE/RESUME...";
-    }
+    private void CaptureStopRecKey() => BeginCapture(HotkeyAction.StopRecording);
+
+    [RelayCommand]
+    private void CaptureEmergencyKey() => BeginCapture(HotkeyAction.Emergency);
+
+    [RelayCommand]
+    private void CaptureStopKey() => BeginCapture(HotkeyAction.StartStop);
+
+    [RelayCommand]
+    private void CapturePauseKey() => BeginCapture(HotkeyAction.PauseResume);
 
     // --- Playback ---
 
@@ -1537,29 +1665,47 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private static string KeyName(long code)
     {
-        if (IsWindows)
-        {
-            return code switch
-            {
-                119 => "F8",
-                120 => "F9",
-                117 => "F6",
-                27 => "Escape",
-                32 => "Space",
-                13 => "Return",
-                _ => $"Key {code}"
-            };
-        }
-
-        return code switch
-        {
-            100 => "F8",
-            101 => "F9",
-            97 => "F6",
-            53 => "Escape",
-            49 => "Space",
-            36 => "Return",
-            _ => $"Key {code}"
-        };
+        if (IsWindows) return WindowsKeyName(code);
+        return MacKeyName(code);
     }
+
+    /// <summary>Windows virtual key codes.</summary>
+    private static string WindowsKeyName(long code) => code switch
+    {
+        112 => "F1", 113 => "F2", 114 => "F3", 115 => "F4",
+        116 => "F5", 117 => "F6", 118 => "F7", 119 => "F8",
+        120 => "F9", 121 => "F10", 122 => "F11", 123 => "F12",
+        8 => "Backspace", 9 => "Tab", 13 => "Return", 19 => "Pause",
+        20 => "Caps Lock", 27 => "Escape", 32 => "Space",
+        33 => "Page Up", 34 => "Page Down", 35 => "End", 36 => "Home",
+        37 => "Left", 38 => "Up", 39 => "Right", 40 => "Down",
+        45 => "Insert", 46 => "Delete",
+        96 => "Numpad 0", 97 => "Numpad 1", 98 => "Numpad 2",
+        99 => "Numpad 3", 100 => "Numpad 4", 101 => "Numpad 5",
+        102 => "Numpad 6", 103 => "Numpad 7", 104 => "Numpad 8",
+        105 => "Numpad 9",
+        >= 48 and <= 57 => ((char)code).ToString(),
+        >= 65 and <= 90 => ((char)code).ToString(),
+        _ => $"Key {code}"
+    };
+
+    /// <summary>macOS virtual key codes, which do not match the Windows set.</summary>
+    private static string MacKeyName(long code) => code switch
+    {
+        122 => "F1", 120 => "F2", 99 => "F3", 118 => "F4",
+        96 => "F5", 97 => "F6", 98 => "F7", 100 => "F8",
+        101 => "F9", 109 => "F10", 103 => "F11", 111 => "F12",
+        51 => "Delete", 48 => "Tab", 36 => "Return", 53 => "Escape",
+        49 => "Space", 117 => "Forward Delete",
+        115 => "Home", 119 => "End", 116 => "Page Up", 121 => "Page Down",
+        123 => "Left", 124 => "Right", 125 => "Down", 126 => "Up",
+        0 => "A", 11 => "B", 8 => "C", 2 => "D", 14 => "E", 3 => "F",
+        5 => "G", 4 => "H", 34 => "I", 38 => "J", 40 => "K", 37 => "L",
+        46 => "M", 45 => "N", 31 => "O", 35 => "P", 12 => "Q", 15 => "R",
+        1 => "S", 17 => "T", 32 => "U", 9 => "V", 13 => "W", 7 => "X",
+        16 => "Y", 6 => "Z",
+        29 => "0", 18 => "1", 19 => "2", 20 => "3", 21 => "4",
+        23 => "5", 22 => "6", 26 => "7", 28 => "8", 25 => "9",
+        _ => $"Key {code}"
+    };
 }

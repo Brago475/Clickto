@@ -46,6 +46,9 @@ public class AppSettings
     // Hotkeys, stored as platform key codes.
     public long StopKeyCode { get; set; } = -1;
     public long PauseKeyCode { get; set; } = -1;
+    public long RecordKeyCode { get; set; } = -1;
+    public long StopRecKeyCode { get; set; } = -1;
+    public long EmergencyKeyCode { get; set; } = -1;
 
     // Last used preset name, restored into the name box.
     public string PresetName { get; set; } = "my_clicks";

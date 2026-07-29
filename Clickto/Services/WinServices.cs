@@ -151,8 +151,7 @@ public class WinRecorderService : IRecorderService
 // --- Hotkeys: global low-level keyboard hook ---
 public class WinHotkeyService : IHotkeyService
 {
-    public event Action? StopPressed;
-    public event Action? PausePressed;
+    public event Action<HotkeyAction>? ActionTriggered;
     public event Action<long>? KeyCaptured;
 
     private const int WH_KEYBOARD_LL = 13;
@@ -160,8 +159,7 @@ public class WinHotkeyService : IHotkeyService
 
     private nint _hook = nint.Zero;
     private LowLevelKeyboardProc? _proc;
-    private long _stopKey = 119;   // F8 on Windows
-    private long _pauseKey = 120;  // F9 on Windows
+    private Dictionary<HotkeyAction, long> _bindings = new();
     private bool _capturing;
 
     private delegate nint LowLevelKeyboardProc(int nCode, nint wParam, nint lParam);
@@ -178,10 +176,9 @@ public class WinHotkeyService : IHotkeyService
     [DllImport("kernel32.dll")]
     private static extern nint GetModuleHandle(string? lpModuleName);
 
-    public void StartListening(long stopKey, long pauseKey)
+    public void StartListening(IReadOnlyDictionary<HotkeyAction, long> bindings)
     {
-        _stopKey = stopKey;
-        _pauseKey = pauseKey;
+        _bindings = new Dictionary<HotkeyAction, long>(bindings);
         _capturing = false;
         EnsureHook();
     }
@@ -210,13 +207,16 @@ public class WinHotkeyService : IHotkeyService
                 _capturing = false;
                 KeyCaptured?.Invoke(vk);
             }
-            else if (vk == _stopKey)
+            else
             {
-                StopPressed?.Invoke();
-            }
-            else if (vk == _pauseKey)
-            {
-                PausePressed?.Invoke();
+                foreach (var pair in _bindings)
+                {
+                    if (pair.Value >= 0 && pair.Value == vk)
+                    {
+                        ActionTriggered?.Invoke(pair.Key);
+                        break;
+                    }
+                }
             }
         }
         return CallNextHookEx(_hook, nCode, wParam, lParam);

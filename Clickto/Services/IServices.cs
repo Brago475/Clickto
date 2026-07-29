@@ -29,14 +29,28 @@ public interface IRecorderService
     List<ClickStep> Stop();
 }
 
-// Listens for two global hotkeys and supports "press any key to set".
+/// <summary>The things a global hotkey can trigger.</summary>
+public enum HotkeyAction
+{
+    Record = 0,
+    StopRecording = 1,
+    StartStop = 2,
+    PauseResume = 3,
+    Emergency = 4
+}
+
+// Listens for global hotkeys and supports "press any key to set".
 public interface IHotkeyService
 {
-    event Action? StopPressed;
-    event Action? PausePressed;
+    /// <summary>Fires with the action whose key was pressed.</summary>
+    event Action<HotkeyAction>? ActionTriggered;
+
+    /// <summary>Fires in capture mode with the raw key code the user pressed.</summary>
     event Action<long>? KeyCaptured;
 
-    void StartListening(long stopKey, long pauseKey);
+    /// <summary>Replaces the whole binding table. Codes below zero are unbound.</summary>
+    void StartListening(IReadOnlyDictionary<HotkeyAction, long> bindings);
+
     void BeginCapture();
     void Stop();
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -18,15 +19,13 @@ public class MacHotkeyService : IHotkeyService
     private const uint KeyDown = 10;
     private const ulong KeyDownMask = 1UL << (int)KeyDown;
 
-    // Fired when the stop key is pressed.
-    public event Action? StopPressed;
-    // Fired when the pause/resume key is pressed.
-    public event Action? PausePressed;
+    // Fired with whichever action the pressed key is bound to.
+    public event Action<HotkeyAction>? ActionTriggered;
     // Fired in capture mode with the key code the user just pressed.
     public event Action<long>? KeyCaptured;
 
-    private long _stopKeyCode = 100;    // F8 default
-    private long _pauseKeyCode = 101;   // F9 default
+    // Key code per action. Codes below zero mean the action is unbound.
+    private Dictionary<HotkeyAction, long> _bindings = new();
     private bool _captureMode;
 
     private delegate nint CGEventTapCallBack(
@@ -69,11 +68,10 @@ public class MacHotkeyService : IHotkeyService
     private CGEventTapCallBack? _callback;
     private bool _isListening;
 
-    /// <summary>Start listening in normal mode for the two given keys.</summary>
-    public void StartListening(long stopKey, long pauseKey)
+    /// <summary>Replace the binding table and listen in normal mode.</summary>
+    public void StartListening(IReadOnlyDictionary<HotkeyAction, long> bindings)
     {
-        _stopKeyCode = stopKey;
-        _pauseKeyCode = pauseKey;
+        _bindings = new Dictionary<HotkeyAction, long>(bindings);
         _captureMode = false;
         EnsureTapRunning();
     }
@@ -132,10 +130,14 @@ public class MacHotkeyService : IHotkeyService
             }
             else
             {
-                if (code == _stopKeyCode)
-                    StopPressed?.Invoke();
-                else if (code == _pauseKeyCode)
-                    PausePressed?.Invoke();
+                foreach (var pair in _bindings)
+                {
+                    if (pair.Value >= 0 && pair.Value == code)
+                    {
+                        ActionTriggered?.Invoke(pair.Key);
+                        break;
+                    }
+                }
             }
         }
 

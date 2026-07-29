@@ -416,21 +416,47 @@
                             <StackPanel Spacing="11">
                                 <TextBlock Classes="section" Text="HOTKEYS"/>
 
-                                <Grid ColumnDefinitions="*,64,Auto" RowDefinitions="Auto,Auto" RowSpacing="9">
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Stop" Classes="cell"/>
+                                <Grid ColumnDefinitions="*,72,Auto"
+                                      RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="9">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Record" Classes="cell"/>
                                     <TextBox Grid.Row="0" Grid.Column="1" Classes="keyfield"
-                                             Text="{Binding StopKeyName}"/>
+                                             Text="{Binding RecordKeyName}"/>
                                     <Button Grid.Row="0" Grid.Column="2" Classes="small" Content="Set"
+                                            Margin="7,0,0,0" Command="{Binding CaptureRecordKeyCommand}"
+                                            ToolTip.Tip="Press to assign a new key"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Stop recording" Classes="cell"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1" Classes="keyfield"
+                                             Text="{Binding StopRecKeyName}"/>
+                                    <Button Grid.Row="1" Grid.Column="2" Classes="small" Content="Set"
+                                            Margin="7,0,0,0" Command="{Binding CaptureStopRecKeyCommand}"
+                                            ToolTip.Tip="Press to assign a new key"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Start / Stop" Classes="cell"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1" Classes="keyfield"
+                                             Text="{Binding StopKeyName}"/>
+                                    <Button Grid.Row="2" Grid.Column="2" Classes="small" Content="Set"
                                             Margin="7,0,0,0" Command="{Binding CaptureStopKeyCommand}"
                                             ToolTip.Tip="Press to assign a new key"/>
 
-                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Pause / Resume" Classes="cell"/>
-                                    <TextBox Grid.Row="1" Grid.Column="1" Classes="keyfield"
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Pause / Resume" Classes="cell"/>
+                                    <TextBox Grid.Row="3" Grid.Column="1" Classes="keyfield"
                                              Text="{Binding PauseKeyName}"/>
-                                    <Button Grid.Row="1" Grid.Column="2" Classes="small" Content="Set"
+                                    <Button Grid.Row="3" Grid.Column="2" Classes="small" Content="Set"
                                             Margin="7,0,0,0" Command="{Binding CapturePauseKeyCommand}"
                                             ToolTip.Tip="Press to assign a new key"/>
+
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Emergency stop" Classes="cell"
+                                               Foreground="#EF4444"/>
+                                    <TextBox Grid.Row="4" Grid.Column="1" Classes="keyfield"
+                                             Text="{Binding EmergencyKeyName}"/>
+                                    <Button Grid.Row="4" Grid.Column="2" Classes="small" Content="Set"
+                                            Margin="7,0,0,0" Command="{Binding CaptureEmergencyKeyCommand}"
+                                            ToolTip.Tip="Halts everything immediately"/>
                                 </Grid>
+
+                                <TextBlock Classes="hint" IsVisible="{Binding ShowHints}"
+                                           Text="Emergency stop works even mid-run. Keys are global, so they fire while other apps are focused."/>
                             </StackPanel>
                         </Border>
 
