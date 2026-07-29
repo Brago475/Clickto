@@ -283,6 +283,26 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private int _positionJitterPx = 3;
 
+    // --- Stop conditions ---
+
+    /// <summary>Stop once this many actions have been performed.</summary>
+    [ObservableProperty]
+    private bool _stopAfterActionsEnabled;
+
+    [ObservableProperty]
+    private int _stopAfterActions = 1000;
+
+    /// <summary>Stop once the run has lasted this long.</summary>
+    [ObservableProperty]
+    private bool _stopAfterTimeEnabled;
+
+    [ObservableProperty]
+    private int _stopAfterMinutes = 10;
+
+    /// <summary>Running total for the current playback, shown while running.</summary>
+    [ObservableProperty]
+    private int _actionsPerformed;
+
     // --- Timing ---
 
     /// <summary>Wait before the first action of a run.</summary>
@@ -801,6 +821,10 @@ public partial class MainWindowViewModel : ViewModelBase
     partial void OnNaturalClicksChanged(bool value) => PersistSettings();
     partial void OnDelayJitterPercentChanged(int value) => PersistSettings();
     partial void OnPositionJitterPxChanged(int value) => PersistSettings();
+    partial void OnStopAfterActionsEnabledChanged(bool value) => PersistSettings();
+    partial void OnStopAfterActionsChanged(int value) => PersistSettings();
+    partial void OnStopAfterTimeEnabledChanged(bool value) => PersistSettings();
+    partial void OnStopAfterMinutesChanged(int value) => PersistSettings();
     partial void OnPresetNameChanged(string value) => PersistSettings();
     // True once the window has settled, so its size reports are real user
     // resizes rather than startup noise.
@@ -865,6 +889,10 @@ public partial class MainWindowViewModel : ViewModelBase
         _settings.NaturalClicks = NaturalClicks;
         _settings.DelayJitterPercent = DelayJitterPercent;
         _settings.PositionJitterPx = PositionJitterPx;
+        _settings.StopAfterActionsEnabled = StopAfterActionsEnabled;
+        _settings.StopAfterActions = StopAfterActions;
+        _settings.StopAfterTimeEnabled = StopAfterTimeEnabled;
+        _settings.StopAfterMinutes = StopAfterMinutes;
 
         _settings.StopKeyCode = _stopKeyCode;
         _settings.PauseKeyCode = _pauseKeyCode;
@@ -915,6 +943,10 @@ public partial class MainWindowViewModel : ViewModelBase
         NaturalClicks = _settings.NaturalClicks;
         DelayJitterPercent = _settings.DelayJitterPercent;
         PositionJitterPx = _settings.PositionJitterPx;
+        StopAfterActionsEnabled = _settings.StopAfterActionsEnabled;
+        StopAfterActions = _settings.StopAfterActions;
+        StopAfterTimeEnabled = _settings.StopAfterTimeEnabled;
+        StopAfterMinutes = _settings.StopAfterMinutes;
 
         PresetName = _settings.PresetName;
 
@@ -1137,7 +1169,13 @@ public partial class MainWindowViewModel : ViewModelBase
 
         TotalLoops = loops;
         CurrentLoop = 0;
+        ActionsPerformed = 0;
         var runClock = System.Diagnostics.Stopwatch.StartNew();
+
+        // Captured once so editing the box mid-run cannot move the target.
+        int actionLimit = StopAfterActionsEnabled ? Math.Max(1, StopAfterActions) : -1;
+        double timeLimitMs = StopAfterTimeEnabled ? Math.Max(1, StopAfterMinutes) * 60000.0 : -1;
+        string? stopReason = null;
         string loopText = loops == -1 ? "forever" : $"{loops} loop(s)";
         string delayText = RemoveDelays ? "seamless loop" : "recorded timing";
         Log = $"Started. {plan.Count} actions, {loopText}, {speed:0.##}x speed, {delayText}. Stop={StopKeyName}, Pause={PauseKeyName}.";
@@ -1180,12 +1218,25 @@ public partial class MainWindowViewModel : ViewModelBase
 
                     Execute(step);
                     PlayheadIndex = step.Index;
+                    ActionsPerformed++;
+
+                    if (actionLimit > 0 && ActionsPerformed >= actionLimit)
+                    {
+                        stopReason = $"Reached the {actionLimit} action limit.";
+                        break;
+                    }
+
+                    if (timeLimitMs > 0 && runClock.Elapsed.TotalMilliseconds >= timeLimitMs)
+                    {
+                        stopReason = $"Reached the {StopAfterMinutes} minute limit.";
+                        break;
+                    }
 
                     string label = loops == -1 ? $"loop {rep}" : $"loop {rep}/{loops}";
                     Log = $"{label}: step {step.Index + 1} {step.TypeLabel} at ({step.X:0}, {step.Y:0})";
                 }
 
-                if (token.IsCancellationRequested) break;
+                if (token.IsCancellationRequested || stopReason != null) break;
             }
         }
         catch (TaskCanceledException) { }
@@ -1198,7 +1249,7 @@ public partial class MainWindowViewModel : ViewModelBase
         PlayheadIndex = -1;
         UpdateStatus();
         if (!token.IsCancellationRequested)
-            Log = "Finished.";
+            Log = stopReason ?? "Finished.";
     }
 
     /// <summary>Performs one step according to its action type.</summary>

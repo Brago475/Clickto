@@ -320,9 +320,14 @@
                                     </StackPanel>
 
                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Actions" Classes="hint" Width="86"/>
-                                    <TextBlock Grid.Row="1" Grid.Column="1" Classes="cell">
-                                        <Run Text="{Binding LoadedCount}" Foreground="{DynamicResource Accent}" FontWeight="Bold"/><Run Text=" recorded"/>
-                                    </TextBlock>
+                                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Classes="cell">
+                                            <Run Text="{Binding LoadedCount}" Foreground="{DynamicResource Accent}" FontWeight="Bold"/><Run Text=" recorded"/>
+                                        </TextBlock>
+                                        <TextBlock Classes="hint" VerticalAlignment="Center"
+                                                   IsVisible="{Binding IsRunning}"
+                                                   Text="{Binding ActionsPerformed, StringFormat='{}{0} done'}"/>
+                                    </StackPanel>
 
                                     <TextBlock Grid.Row="2" Grid.Column="0" Text="Elapsed" Classes="hint" Width="86"/>
                                     <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="8">
@@ -409,6 +414,31 @@
                                         HorizontalAlignment="Stretch"
                                         Command="{Binding BakeSpeedCommand}" IsEnabled="{Binding CanEdit}"
                                         ToolTip.Tip="Rewrites every delay and resets speed to 1x"/>
+
+                                <Border Classes="divider"/>
+
+                                <TextBlock Classes="section" Text="STOP CONDITIONS"/>
+
+                                <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto" RowSpacing="10">
+                                    <CheckBox Grid.Row="0" Grid.Column="0" Content="Stop after"
+                                              IsChecked="{Binding StopAfterActionsEnabled}"/>
+                                    <TextBox Grid.Row="0" Grid.Column="1" Width="72"
+                                             Text="{Binding StopAfterActions, Converter={x:Static vm:IntTextConverter.Instance}}"
+                                             IsEnabled="{Binding StopAfterActionsEnabled}"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="actions" Classes="hint"
+                                               VerticalAlignment="Center" Margin="7,0,0,0"/>
+
+                                    <CheckBox Grid.Row="1" Grid.Column="0" Content="Run for"
+                                              IsChecked="{Binding StopAfterTimeEnabled}"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1" Width="72"
+                                             Text="{Binding StopAfterMinutes, Converter={x:Static vm:IntTextConverter.Instance}}"
+                                             IsEnabled="{Binding StopAfterTimeEnabled}"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="minutes" Classes="hint"
+                                               VerticalAlignment="Center" Margin="7,0,0,0"/>
+                                </Grid>
+
+                                <TextBlock Classes="hint" IsVisible="{Binding ShowHints}"
+                                           Text="Limits apply to the whole run, across every loop."/>
                             </StackPanel>
                         </Border>
 

@@ -43,6 +43,12 @@ public class AppSettings
     public int DelayJitterPercent { get; set; } = 15;
     public int PositionJitterPx { get; set; } = 3;
 
+    // Stop conditions
+    public bool StopAfterActionsEnabled { get; set; }
+    public int StopAfterActions { get; set; } = 1000;
+    public bool StopAfterTimeEnabled { get; set; }
+    public int StopAfterMinutes { get; set; } = 10;
+
     // Hotkeys, stored as platform key codes.
     public long StopKeyCode { get; set; } = -1;
     public long PauseKeyCode { get; set; } = -1;
