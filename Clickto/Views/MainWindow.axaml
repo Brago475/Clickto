@@ -409,6 +409,17 @@
                                 <CheckBox Content="Natural clicks" IsChecked="{Binding NaturalClicks}"
                                           ToolTip.Tip="Varies timing, aim and press length each run"/>
 
+                                <CheckBox Content="Smooth cursor travel" IsChecked="{Binding SmoothTravel}"
+                                          ToolTip.Tip="Moves the cursor along a curved path instead of jumping"/>
+
+                                <Border IsVisible="{Binding SmoothTravel}"
+                                        Background="{DynamicResource SurfaceAlt}"
+                                        BorderBrush="{DynamicResource Amber}" BorderThickness="1"
+                                        CornerRadius="6" Padding="10,8">
+                                    <TextBlock Classes="hint"
+                                               Text="Playback takes longer, since the cursor now travels between every action instead of jumping. Recorded delays still apply on top of the travel time. Press your emergency stop key if a run gets away from you."/>
+                                </Border>
+
                                 <Grid ColumnDefinitions="88,*" IsVisible="{Binding NaturalClicks}">
                                     <TextBlock Grid.Column="0" Text="Variation" Classes="cell"/>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7">

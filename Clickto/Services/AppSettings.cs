@@ -43,6 +43,8 @@ public class AppSettings
     public int DelayJitterPercent { get; set; } = 15;
     public int PositionJitterPx { get; set; } = 3;
 
+    public bool SmoothTravel { get; set; }
+
     // Stop conditions
     public bool StopAfterActionsEnabled { get; set; }
     public int StopAfterActions { get; set; } = 1000;

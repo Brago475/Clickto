@@ -283,6 +283,19 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private int _positionJitterPx = 3;
 
+    /// <summary>
+    /// Moves the cursor along a curved path between actions instead of
+    /// warping it. Off by default: when disabled, playback takes exactly the
+    /// same code path it always has.
+    /// </summary>
+    [ObservableProperty]
+    private bool _smoothTravel;
+
+    // Where the cursor was left by the previous action, so the next move has
+    // a starting point. Negative means unknown, which skips the first travel.
+    private double _lastX = -1;
+    private double _lastY = -1;
+
     // --- Stop conditions ---
 
     /// <summary>Stop once this many actions have been performed.</summary>
@@ -821,6 +834,7 @@ public partial class MainWindowViewModel : ViewModelBase
     partial void OnNaturalClicksChanged(bool value) => PersistSettings();
     partial void OnDelayJitterPercentChanged(int value) => PersistSettings();
     partial void OnPositionJitterPxChanged(int value) => PersistSettings();
+    partial void OnSmoothTravelChanged(bool value) => PersistSettings();
     partial void OnStopAfterActionsEnabledChanged(bool value) => PersistSettings();
     partial void OnStopAfterActionsChanged(int value) => PersistSettings();
     partial void OnStopAfterTimeEnabledChanged(bool value) => PersistSettings();
@@ -889,6 +903,7 @@ public partial class MainWindowViewModel : ViewModelBase
         _settings.NaturalClicks = NaturalClicks;
         _settings.DelayJitterPercent = DelayJitterPercent;
         _settings.PositionJitterPx = PositionJitterPx;
+        _settings.SmoothTravel = SmoothTravel;
         _settings.StopAfterActionsEnabled = StopAfterActionsEnabled;
         _settings.StopAfterActions = StopAfterActions;
         _settings.StopAfterTimeEnabled = StopAfterTimeEnabled;
@@ -943,6 +958,7 @@ public partial class MainWindowViewModel : ViewModelBase
         NaturalClicks = _settings.NaturalClicks;
         DelayJitterPercent = _settings.DelayJitterPercent;
         PositionJitterPx = _settings.PositionJitterPx;
+        SmoothTravel = _settings.SmoothTravel;
         StopAfterActionsEnabled = _settings.StopAfterActionsEnabled;
         StopAfterActions = _settings.StopAfterActions;
         StopAfterTimeEnabled = _settings.StopAfterTimeEnabled;
@@ -1170,6 +1186,8 @@ public partial class MainWindowViewModel : ViewModelBase
         TotalLoops = loops;
         CurrentLoop = 0;
         ActionsPerformed = 0;
+        _lastX = -1;
+        _lastY = -1;
         var runClock = System.Diagnostics.Stopwatch.StartNew();
 
         // Captured once so editing the box mid-run cannot move the target.
@@ -1216,6 +1234,9 @@ public partial class MainWindowViewModel : ViewModelBase
                         await Task.Delay(delay, token);
                     }
 
+                    if (SmoothTravel)
+                        await TravelTo(step, speed, token);
+
                     Execute(step);
                     PlayheadIndex = step.Index;
                     ActionsPerformed++;
@@ -1250,6 +1271,49 @@ public partial class MainWindowViewModel : ViewModelBase
         UpdateStatus();
         if (!token.IsCancellationRequested)
             Log = stopReason ?? "Finished.";
+    }
+
+    /// <summary>
+    /// Walks the cursor from wherever the last action left it to this one.
+    /// Only called when smooth travel is enabled.
+    /// </summary>
+    private async Task TravelTo(StepRow step, double speed, CancellationToken token)
+    {
+        // Delay steps have no position, so there is nothing to travel to.
+        if (step.Type == ActionType.Delay) return;
+
+        // First action of a run: we do not know where the cursor was, so
+        // jump rather than animate from an arbitrary point.
+        if (_lastX < 0 || _lastY < 0)
+        {
+            _lastX = step.X;
+            _lastY = step.Y;
+            return;
+        }
+
+        double dx = step.X - _lastX;
+        double dy = step.Y - _lastY;
+        double distance = Math.Sqrt(dx * dx + dy * dy);
+
+        int duration = CursorPath.DurationFor(distance, speed);
+        if (duration <= 0)
+        {
+            _lastX = step.X;
+            _lastY = step.Y;
+            return;
+        }
+
+        var path = CursorPath.Build(_lastX, _lastY, step.X, step.Y, duration);
+
+        foreach (var point in path)
+        {
+            if (token.IsCancellationRequested) return;
+            _mouse.MoveTo(point.X, point.Y);
+            await Task.Delay(CursorPath.StepDelayMs, token);
+        }
+
+        _lastX = step.X;
+        _lastY = step.Y;
     }
 
     /// <summary>Performs one step according to its action type.</summary>
@@ -1291,6 +1355,12 @@ public partial class MainWindowViewModel : ViewModelBase
                 int hold = NaturalClicks ? Humanizer.Hold(step.HoldMs) : step.HoldMs;
                 _mouse.ClickAt(x, y, step.Button, step.ClickCount, hold);
                 break;
+        }
+
+        if (step.Type != ActionType.Delay)
+        {
+            _lastX = x;
+            _lastY = y;
         }
     }
 
