@@ -22,7 +22,7 @@ public class ThemeConverter : IValueConverter
         => throw new NotSupportedException();
 }
  
-// Shows a moon when in dark mode (tap to go light) and a sun when in light mode.
+// Labels the theme button with the mode it will switch TO, not the current one.
 public class ThemeIconConverter : IValueConverter
 {
     public static readonly ThemeIconConverter Instance = new();
@@ -30,7 +30,9 @@ public class ThemeIconConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         bool isDark = value is bool b && b;
-        return isDark ? "\u263D" : "\u2600";  // ☽ moon  /  ☀ sun
+        // Text rather than symbols, since the moon and sun glyphs fall back
+        // to an empty box in the default font on macOS.
+        return isDark ? "Light" : "Dark";
     }
  
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

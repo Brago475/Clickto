@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Clickto.Models;
 
 namespace Clickto.Services;
@@ -10,7 +11,7 @@ namespace Clickto.Services;
 // only RUN on Windows. Tested in the Windows VM.
 // ============================================================
 
-// --- Mouse: move cursor + left click ---
+// --- Mouse: move cursor, click any button, hold, scroll ---
 public class WinMouseService : IMouseService
 {
     [DllImport("user32.dll")]
@@ -21,13 +22,53 @@ public class WinMouseService : IMouseService
 
     private const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
     private const uint MOUSEEVENTF_LEFTUP = 0x0004;
+    private const uint MOUSEEVENTF_RIGHTDOWN = 0x0008;
+    private const uint MOUSEEVENTF_RIGHTUP = 0x0010;
+    private const uint MOUSEEVENTF_MIDDLEDOWN = 0x0020;
+    private const uint MOUSEEVENTF_MIDDLEUP = 0x0040;
+    private const uint MOUSEEVENTF_WHEEL = 0x0800;
+
+    // One wheel notch in Windows units.
+    private const int WHEEL_DELTA = 120;
 
     public void ClickAt(double x, double y)
+        => ClickAt(x, y, MouseButton.Left, 1, 0);
+
+    public void ClickAt(double x, double y, MouseButton button, int clickCount, int holdMs)
     {
+        if (clickCount < 1) clickCount = 1;
+
         SetCursorPos((int)x, (int)y);
-        mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-        mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+        (uint down, uint up) = Resolve(button);
+
+        for (int i = 1; i <= clickCount; i++)
+        {
+            mouse_event(down, 0, 0, 0, 0);
+            if (holdMs > 0) Thread.Sleep(holdMs);
+            mouse_event(up, 0, 0, 0, 0);
+
+            // Consecutive clicks need a small gap to register as a double click.
+            if (i < clickCount) Thread.Sleep(40);
+        }
     }
+
+    public void MoveTo(double x, double y)
+        => SetCursorPos((int)x, (int)y);
+
+    public void Scroll(double x, double y, int notches)
+    {
+        if (notches == 0) return;
+
+        SetCursorPos((int)x, (int)y);
+        mouse_event(MOUSEEVENTF_WHEEL, 0, 0, unchecked((uint)(notches * WHEEL_DELTA)), 0);
+    }
+
+    private static (uint down, uint up) Resolve(MouseButton button) => button switch
+    {
+        MouseButton.Right => (MOUSEEVENTF_RIGHTDOWN, MOUSEEVENTF_RIGHTUP),
+        MouseButton.Middle => (MOUSEEVENTF_MIDDLEDOWN, MOUSEEVENTF_MIDDLEUP),
+        _ => (MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP)
+    };
 }
 
 // --- Recorder: global low-level mouse hook captures each click ---

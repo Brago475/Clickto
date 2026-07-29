@@ -4,16 +4,26 @@ using Clickto.Models;
 
 namespace Clickto.Services;
 
-// Clicks the physical mouse at a screen coordinate.
+// Drives the physical mouse.
 public interface IMouseService
 {
+    // Kept so existing callers keep working. Plain single left click.
     void ClickAt(double x, double y);
+
+    // Full click: button choice, repeat count, and how long to hold each press.
+    void ClickAt(double x, double y, MouseButton button, int clickCount, int holdMs);
+
+    // Moves the cursor without pressing anything.
+    void MoveTo(double x, double y);
+
+    // Scrolls the wheel. Positive is up, negative is down, measured in notches.
+    void Scroll(double x, double y, int notches);
 }
 
-// Captures mouse clicks globally while recording.
+// Captures mouse input globally while recording.
 public interface IRecorderService
 {
-    // Fires with the running click count (or -1 if the capture failed to start).
+    // Fires with the running action count (or -1 if the capture failed to start).
     event Action<int>? ClickCaptured;
     void Start();
     List<ClickStep> Stop();

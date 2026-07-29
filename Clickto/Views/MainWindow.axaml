@@ -8,8 +8,11 @@
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/clickto.png"
         Title="Clickto"
-        Width="440" Height="730"
-        CanResize="False"
+        Width="{Binding WindowWidth, Mode=TwoWay}"
+        Height="{Binding WindowHeight, Mode=TwoWay}"
+        MinWidth="560" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        CanResize="True"
         RequestedThemeVariant="{Binding IsDark, Converter={x:Static vm:ThemeConverter.Instance}}"
         Background="{DynamicResource Bg}">
 
@@ -21,24 +24,32 @@
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="Bg" Color="#0E1116"/>
-                    <SolidColorBrush x:Key="Surface" Color="#191D24"/>
-                    <SolidColorBrush x:Key="ButtonBg" Color="#2A2F3A"/>
-                    <SolidColorBrush x:Key="TextMain" Color="#E5E7EB"/>
-                    <SolidColorBrush x:Key="TextTitle" Color="#F9FAFB"/>
-                    <SolidColorBrush x:Key="TextMuted" Color="#5B6472"/>
-                    <SolidColorBrush x:Key="Divider" Color="#20252E"/>
+                    <SolidColorBrush x:Key="Bg" Color="#0A0A0B"/>
+                    <SolidColorBrush x:Key="Surface" Color="#161618"/>
+                    <SolidColorBrush x:Key="SurfaceAlt" Color="#101011"/>
+                    <SolidColorBrush x:Key="Panel" Color="#141416"/>
+                    <SolidColorBrush x:Key="PanelBorder" Color="#26262A"/>
+                    <SolidColorBrush x:Key="ButtonBg" Color="#2A2A2F"/>
+                    <SolidColorBrush x:Key="TextMain" Color="#E9E9EC"/>
+                    <SolidColorBrush x:Key="TextTitle" Color="#FAFAFA"/>
+                    <SolidColorBrush x:Key="TextMuted" Color="#8A8A93"/>
+                    <SolidColorBrush x:Key="Divider" Color="#26262A"/>
                     <SolidColorBrush x:Key="Accent" Color="#06B6D4"/>
+                    <SolidColorBrush x:Key="Amber" Color="#F59E0B"/>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="Bg" Color="#FFFFFF"/>
+                    <SolidColorBrush x:Key="Bg" Color="#F4F4F5"/>
                     <SolidColorBrush x:Key="Surface" Color="#FFFFFF"/>
-                    <SolidColorBrush x:Key="ButtonBg" Color="#EDF0F4"/>
-                    <SolidColorBrush x:Key="TextMain" Color="#111827"/>
+                    <SolidColorBrush x:Key="SurfaceAlt" Color="#FFFFFF"/>
+                    <SolidColorBrush x:Key="Panel" Color="#FFFFFF"/>
+                    <SolidColorBrush x:Key="PanelBorder" Color="#DFDFE3"/>
+                    <SolidColorBrush x:Key="ButtonBg" Color="#E8E8EB"/>
+                    <SolidColorBrush x:Key="TextMain" Color="#18181B"/>
                     <SolidColorBrush x:Key="TextTitle" Color="#000000"/>
-                    <SolidColorBrush x:Key="TextMuted" Color="#9AA2AF"/>
-                    <SolidColorBrush x:Key="Divider" Color="#E6E9EE"/>
+                    <SolidColorBrush x:Key="TextMuted" Color="#6B6B73"/>
+                    <SolidColorBrush x:Key="Divider" Color="#E4E4E7"/>
                     <SolidColorBrush x:Key="Accent" Color="#0891B2"/>
+                    <SolidColorBrush x:Key="Amber" Color="#B45309"/>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
@@ -46,21 +57,50 @@
 
     <Window.Styles>
         <Style Selector="TextBlock.section">
-            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMain}"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
-        <Style Selector="TextBlock.label">
-            <Setter Property="Foreground" Value="{DynamicResource TextMain}"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Width" Value="100"/>
+        <Style Selector="TextBlock.hint">
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
+        <Style Selector="TextBlock.colhead">
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="TextBlock.cell">
+            <Setter Property="Foreground" Value="{DynamicResource TextMain}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="TextBlock.cellmuted">
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontFamily" Value="monospace"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="TextBlock.statuskey">
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
         <Style Selector="Button">
             <Setter Property="Background" Value="{DynamicResource ButtonBg}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextMain}"/>
             <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinHeight" Value="36"/>
             <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button:disabled">
+            <Setter Property="Opacity" Value="0.36"/>
         </Style>
         <Style Selector="Button.primary">
             <Setter Property="Background" Value="{DynamicResource Accent}"/>
@@ -72,132 +112,799 @@
             <Setter Property="Foreground" Value="#2A0A0A"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
+        <Style Selector="Button.pause">
+            <Setter Property="Background" Value="{DynamicResource Amber}"/>
+            <Setter Property="Foreground" Value="#2A1A02"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
         <Style Selector="Button.danger">
             <Setter Property="Background" Value="#B91C1C"/>
             <Setter Property="Foreground" Value="#FEE2E2"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="Button.small">
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="MinHeight" Value="28"/>
         </Style>
         <Style Selector="Button.icon">
-            <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Padding" Value="9,6"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="MinHeight" Value="30"/>
         </Style>
         <Style Selector="Button.flash">
             <Setter Property="Background" Value="#22C55E"/>
             <Setter Property="Foreground" Value="#052E14"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
+        <Style Selector="Button.segoff">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+        </Style>
+        <Style Selector="Button.segon">
+            <Setter Property="Background" Value="{DynamicResource Accent}"/>
+            <Setter Property="Foreground" Value="#04212A"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="Button.segon:disabled">
+            <Setter Property="Opacity" Value="1.0"/>
+        </Style>
+
         <Style Selector="TextBox">
             <Setter Property="Background" Value="{DynamicResource Surface}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextMain}"/>
             <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="8,6"/>
+        </Style>
+        <Style Selector="TextBox.keyfield">
+            <Setter Property="FontFamily" Value="monospace"/>
+            <Setter Property="Foreground" Value="{DynamicResource Accent}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="ComboBox">
             <Setter Property="Background" Value="{DynamicResource Surface}"/>
             <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="8,5"/>
+        </Style>
+        <Style Selector="CheckBox">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMain}"/>
+        </Style>
+
+        <Style Selector="Border.panel">
+            <Setter Property="Background" Value="{DynamicResource Panel}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource PanelBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="18"/>
+        </Style>
+        <Style Selector="Border.bar">
+            <Setter Property="Background" Value="{DynamicResource SurfaceAlt}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Divider}"/>
         </Style>
         <Style Selector="Border.divider">
             <Setter Property="Height" Value="1"/>
             <Setter Property="Background" Value="{DynamicResource Divider}"/>
         </Style>
+        <Style Selector="Border.vsep">
+            <Setter Property="Width" Value="1"/>
+            <Setter Property="Background" Value="{DynamicResource Divider}"/>
+            <Setter Property="Margin" Value="5,3"/>
+        </Style>
+
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="MinHeight" Value="0"/>
+        </Style>
     </Window.Styles>
 
-    <StackPanel Margin="20" Spacing="14">
+    <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- Title row with theme toggle top-right -->
-        <Grid ColumnDefinitions="*,Auto">
-            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
-                <Image Source="/Assets/clickto.png" Width="42" Height="42" VerticalAlignment="Center"/>
-                <TextBlock FontSize="26" FontWeight="Bold" VerticalAlignment="Center">
-                    <Run Text="Click" Foreground="{DynamicResource TextTitle}"/><Run Text="to" Foreground="{DynamicResource Accent}"/>
+        <Border Grid.Row="0" Classes="bar" BorderThickness="0,0,0,1" Padding="22,12">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto">
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Image Source="/Assets/clickto.png" Width="26" Height="26"/>
+                    <TextBlock FontSize="18" FontWeight="Bold" VerticalAlignment="Center">
+                        <Run Text="Click" Foreground="{DynamicResource TextTitle}"/><Run Text="to" Foreground="{DynamicResource Accent}"/>
+                    </TextBlock>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
+                            VerticalAlignment="Center" Margin="22,0,0,0">
+                    <TextBlock Text="Preset" Classes="hint" VerticalAlignment="Center"/>
+                    <TextBox Text="{Binding PresetName}" Width="150"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8"
+                            VerticalAlignment="Center" IsVisible="{Binding IsAdvanced}">
+                    <TextBlock Text="Layout" Classes="hint" VerticalAlignment="Center"/>
+                    <ComboBox ItemsSource="{Binding LayoutOptions}"
+                              SelectedItem="{Binding SelectedLayout}" Width="130"/>
+                    <Button Classes="small" Content="Panels" ToolTip.Tip="Show or hide panels">
+                        <Button.Flyout>
+                            <Flyout>
+                                <StackPanel Spacing="10" Width="196">
+                                    <TextBlock Classes="section" Text="VISIBLE PANELS"/>
+                                    <CheckBox Content="Controls" IsChecked="{Binding ShowControlsPanel}"/>
+                                    <CheckBox Content="Playback" IsChecked="{Binding ShowPlaybackPanel}"/>
+                                    <CheckBox Content="Timeline" IsChecked="{Binding ShowTimelinePanel}"/>
+                                    <CheckBox Content="Step editor" IsChecked="{Binding ShowPropertiesPanel}"/>
+                                    <CheckBox Content="Hotkeys" IsChecked="{Binding ShowHotkeysPanel}"/>
+                                    <CheckBox Content="Presets" IsChecked="{Binding ShowPresetsPanel}"/>
+                                    <Border Classes="divider"/>
+                                    <CheckBox Content="Inline help text" IsChecked="{Binding ShowHints}"/>
+                                    <Button Classes="small" Content="Reset layout"
+                                            Command="{Binding ResetPanelsCommand}"
+                                            HorizontalAlignment="Stretch"/>
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+
+                <Border Grid.Column="4" Background="{DynamicResource ButtonBg}" CornerRadius="9"
+                        Padding="3" Margin="14,0,10,0" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="2">
+                        <Button Classes="small" Content="Simple"
+                                Classes.segon="{Binding !IsAdvanced}"
+                                Classes.segoff="{Binding IsAdvanced}"
+                                Command="{Binding ToggleModeCommand}"
+                                IsEnabled="{Binding IsAdvanced}"/>
+                        <Button Classes="small" Content="Advanced"
+                                Classes.segon="{Binding IsAdvanced}"
+                                Classes.segoff="{Binding !IsAdvanced}"
+                                Command="{Binding ToggleModeCommand}"
+                                IsEnabled="{Binding !IsAdvanced}"/>
+                    </StackPanel>
+                </Border>
+
+                <Button Grid.Column="5" Classes="small" Width="62"
+                        Content="{Binding IsDark, Converter={x:Static vm:ThemeIconConverter.Instance}}"
+                        Command="{Binding ToggleThemeCommand}"
+                        ToolTip.Tip="Switch between dark and light"
+                        VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <Panel Grid.Row="1">
+
+            <Grid Margin="14" IsVisible="{Binding !IsStacked}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="290"/>
+                    <ColumnDefinition Width="*" MinWidth="420"/>
+                    <ColumnDefinition Width="304"/>
+                </Grid.ColumnDefinitions>
+
+                <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="14" Margin="0,0,14,8">
+
+                        <Border Classes="panel" IsVisible="{Binding ShowControlsPanel}">
+                            <StackPanel Spacing="12">
+                                <TextBlock Classes="section" Text="CONTROLS"/>
+
+                                <UniformGrid Columns="2">
+                                    <Button Classes="record" Content="● Record" Margin="0,0,4,0"
+                                            HorizontalAlignment="Stretch"
+                                            Command="{Binding RecordCommand}" IsEnabled="{Binding !IsRecording}"/>
+                                    <Button Content="■ Stop Rec" Margin="4,0,0,0"
+                                            HorizontalAlignment="Stretch"
+                                            Command="{Binding StopRecordingButtonCommand}"
+                                            IsEnabled="{Binding IsRecording}"/>
+                                </UniformGrid>
+
+                                <UniformGrid Columns="2">
+                                    <Button Classes="primary" Content="► Start" Margin="0,0,4,0"
+                                            HorizontalAlignment="Stretch"
+                                            Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}"/>
+                                    <Button Classes="pause" Content="{Binding PauseButtonLabel}" Margin="4,0,0,0"
+                                            HorizontalAlignment="Stretch"
+                                            Command="{Binding TogglePauseCommand}" IsEnabled="{Binding IsRunning}"/>
+                                </UniformGrid>
+
+                                <Button Content="■ Stop" HorizontalAlignment="Stretch"
+                                        Command="{Binding StopCommand}" IsEnabled="{Binding IsRunning}"/>
+
+                                <Border Classes="divider"/>
+
+                                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Status" Classes="hint" Width="86"/>
+                                    <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="7">
+                                        <Border Width="8" Height="8" CornerRadius="4"
+                                                Background="{Binding StatusColor}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding StatusText}" Classes="cell"/>
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Actions" Classes="hint" Width="86"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Classes="cell">
+                                        <Run Text="{Binding LoadedCount}" Foreground="{DynamicResource Accent}" FontWeight="Bold"/><Run Text=" recorded"/>
+                                    </TextBlock>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Elapsed" Classes="hint" Width="86"/>
+                                    <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="{Binding ElapsedText}" Classes="cellmuted"/>
+                                        <TextBlock Text="{Binding LoopProgress}" Classes="hint" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock Text="{Binding Log}" Classes="hint"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="panel" IsVisible="{Binding ShowPlaybackPanel}">
+                            <StackPanel Spacing="12">
+                                <TextBlock Classes="section" Text="PLAYBACK"/>
+
+                                <Grid ColumnDefinitions="88,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Repeat" Classes="cell"/>
+                                    <Grid Grid.Row="0" Grid.Column="1" ColumnDefinitions="*,Auto">
+                                        <ComboBox Grid.Column="0" HorizontalAlignment="Stretch"
+                                                  ItemsSource="{Binding LoopOptions}" SelectedItem="{Binding SelectedLoop}"
+                                                  IsVisible="{Binding !IsCustomLoop}"/>
+                                        <TextBox Grid.Column="0" Text="{Binding CustomLoops, Converter={x:Static vm:IntTextConverter.Instance}}"
+                                                 HorizontalAlignment="Stretch" IsVisible="{Binding IsCustomLoop}"/>
+                                        <Button Grid.Column="1" Classes="small" Content="↺" Margin="6,0,0,0"
+                                                IsVisible="{Binding IsCustomLoop}"
+                                                Command="{Binding ClearCustomLoopCommand}"
+                                                ToolTip.Tip="Back to the preset list"/>
+                                    </Grid>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Speed" Classes="cell"/>
+                                    <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,Auto">
+                                        <ComboBox Grid.Column="0" HorizontalAlignment="Stretch"
+                                                  ItemsSource="{Binding SpeedOptions}" SelectedItem="{Binding SelectedSpeed}"
+                                                  IsVisible="{Binding !IsCustomSpeed}"/>
+                                        <TextBox Grid.Column="0" Text="{Binding CustomSpeed, Converter={x:Static vm:DoubleTextConverter.Instance}}"
+                                                 HorizontalAlignment="Stretch" IsVisible="{Binding IsCustomSpeed}"/>
+                                        <Button Grid.Column="1" Classes="small" Content="↺" Margin="6,0,0,0"
+                                                IsVisible="{Binding IsCustomSpeed}"
+                                                Command="{Binding ClearCustomSpeedCommand}"
+                                                ToolTip.Tip="Back to the preset list"/>
+                                    </Grid>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Start delay" Classes="cell"/>
+                                    <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*,Auto">
+                                        <TextBox Grid.Column="0" Text="{Binding StartDelayMs, Converter={x:Static vm:IntTextConverter.Instance}}"
+                                                 HorizontalAlignment="Stretch"
+                                                 ToolTip.Tip="Wait before the first action of a run"/>
+                                        <TextBlock Grid.Column="1" Text="ms" Classes="hint"
+                                                   VerticalAlignment="Center" Margin="7,0,0,0"/>
+                                    </Grid>
+
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Loop pause" Classes="cell"/>
+                                    <Grid Grid.Row="3" Grid.Column="1" ColumnDefinitions="*,Auto">
+                                        <TextBox Grid.Column="0" Text="{Binding LoopPauseMs, Converter={x:Static vm:IntTextConverter.Instance}}"
+                                                 HorizontalAlignment="Stretch"
+                                                 ToolTip.Tip="Extra wait inserted between repeats"/>
+                                        <TextBlock Grid.Column="1" Text="ms" Classes="hint"
+                                                   VerticalAlignment="Center" Margin="7,0,0,0"/>
+                                    </Grid>
+                                </Grid>
+
+                                <Border Classes="divider"/>
+
+                                <CheckBox Content="Preserve recorded pauses" IsChecked="{Binding RemoveDelays}"
+                                          ToolTip.Tip="On: pause between loops. Off: loops run seamlessly."/>
+
+                                <CheckBox Content="Natural clicks" IsChecked="{Binding NaturalClicks}"
+                                          ToolTip.Tip="Varies timing, aim and press length each run"/>
+
+                                <Grid ColumnDefinitions="88,*" IsVisible="{Binding NaturalClicks}">
+                                    <TextBlock Grid.Column="0" Text="Variation" Classes="cell"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7">
+                                        <TextBox Text="{Binding DelayJitterPercent, Converter={x:Static vm:IntTextConverter.Instance}}" Width="56"
+                                                 ToolTip.Tip="Delay variation, percent"/>
+                                        <TextBlock Text="%" Classes="hint" VerticalAlignment="Center"/>
+                                        <TextBox Text="{Binding PositionJitterPx, Converter={x:Static vm:IntTextConverter.Instance}}" Width="56"
+                                                 ToolTip.Tip="Aim variation, pixels"/>
+                                        <TextBlock Text="px" Classes="hint" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Button Classes="small" Content="Apply speed permanently"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{Binding BakeSpeedCommand}" IsEnabled="{Binding CanEdit}"
+                                        ToolTip.Tip="Rewrites every delay and resets speed to 1x"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="panel" IsVisible="{Binding ShowHotkeysPanel}">
+                            <StackPanel Spacing="11">
+                                <TextBlock Classes="section" Text="HOTKEYS"/>
+
+                                <Grid ColumnDefinitions="*,64,Auto" RowDefinitions="Auto,Auto" RowSpacing="9">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Stop" Classes="cell"/>
+                                    <TextBox Grid.Row="0" Grid.Column="1" Classes="keyfield"
+                                             Text="{Binding StopKeyName}"/>
+                                    <Button Grid.Row="0" Grid.Column="2" Classes="small" Content="Set"
+                                            Margin="7,0,0,0" Command="{Binding CaptureStopKeyCommand}"
+                                            ToolTip.Tip="Press to assign a new key"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Pause / Resume" Classes="cell"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1" Classes="keyfield"
+                                             Text="{Binding PauseKeyName}"/>
+                                    <Button Grid.Row="1" Grid.Column="2" Classes="small" Content="Set"
+                                            Margin="7,0,0,0" Command="{Binding CapturePauseKeyCommand}"
+                                            ToolTip.Tip="Press to assign a new key"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+
+                <Border Grid.Column="1" Classes="panel" IsVisible="{Binding ShowTimelinePanel}">
+                    <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+                        <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+                            <TextBlock Grid.Column="0" Classes="section" Text="TIMELINE" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Classes="hint" Text="{Binding TimelineSummary}"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <WrapPanel Grid.Row="1" Orientation="Horizontal" ItemSpacing="5" LineSpacing="5"
+                                   Margin="0,14,0,0">
+                            <Button Classes="small" Content="+ Action" Command="{Binding AddStepCommand}"
+                                    IsEnabled="{Binding CanEdit}" ToolTip.Tip="Insert a click after the selection"/>
+                            <Button Classes="small" Content="+ Delay" Command="{Binding AddDelayStepCommand}"
+                                    IsEnabled="{Binding CanEdit}" ToolTip.Tip="Insert a wait with no click"/>
+                            <Border Classes="vsep"/>
+                            <Button Classes="small" Content="↑" Command="{Binding MoveStepUpCommand}"
+                                    IsEnabled="{Binding HasSelection}" ToolTip.Tip="Move up"/>
+                            <Button Classes="small" Content="↓" Command="{Binding MoveStepDownCommand}"
+                                    IsEnabled="{Binding HasSelection}" ToolTip.Tip="Move down"/>
+                            <Button Classes="small" Content="⧉ Duplicate" Command="{Binding DuplicateStepCommand}"
+                                    IsEnabled="{Binding HasSelection}"/>
+                            <Button Classes="small" Content="⊘ Mute" Command="{Binding ToggleMuteStepCommand}"
+                                    IsEnabled="{Binding HasSelection}"/>
+                            <Button Classes="small danger" Content="🗑 Delete" Command="{Binding DeleteStepCommand}"
+                                    IsEnabled="{Binding HasSelection}"/>
+                            <Border Classes="vsep"/>
+                            <Button Classes="small" Content="⇤ Trim" Command="{Binding TrimBeforeCommand}"
+                                    IsEnabled="{Binding HasSelection}" ToolTip.Tip="Delete everything before this step"/>
+                            <Button Classes="small" Content="Trim ⇥" Command="{Binding TrimAfterCommand}"
+                                    IsEnabled="{Binding HasSelection}" ToolTip.Tip="Delete everything after this step"/>
+                            <Button Classes="small danger" Content="✕ Clear" Command="{Binding ClearTimelineCommand}"
+                                    IsEnabled="{Binding HasSteps}"/>
+                        </WrapPanel>
+
+                        <Border Grid.Row="2" Margin="0,10,0,12" IsVisible="{Binding HasSteps}"
+                                Background="{DynamicResource SurfaceAlt}"
+                                BorderBrush="{DynamicResource Divider}" BorderThickness="1"
+                                CornerRadius="8" Padding="14,11">
+                            <StackPanel Spacing="11">
+                                <TextBlock Classes="section" Text="TIMELINE TOOLS"/>
+
+                                <Grid ColumnDefinitions="*,Auto,Auto">
+                                    <UniformGrid Grid.Column="0" Rows="1" Columns="4">
+                                        <Button Classes="small" Content="✓ Enable all" Margin="0,0,5,0"
+                                                Command="{Binding EnableAllCommand}"/>
+                                        <Button Classes="small" Content="✕ Disable all" Margin="5,0"
+                                                Command="{Binding DisableAllCommand}"/>
+                                        <Button Classes="small" Content="− 10 ms" Margin="5,0"
+                                                Command="{Binding NudgeFasterCommand}"
+                                                IsEnabled="{Binding HasSelection}"/>
+                                        <Button Classes="small" Content="+ 10 ms" Margin="5,0,0,0"
+                                                Command="{Binding NudgeSlowerCommand}"
+                                                IsEnabled="{Binding HasSelection}"/>
+                                    </UniformGrid>
+
+                                    <Border Grid.Column="1" Classes="vsep" Margin="16,2"/>
+
+                                    <StackPanel Grid.Column="2" Spacing="6" VerticalAlignment="Center">
+                                        <TextBlock Text="Set every delay" Classes="hint"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="7">
+                                            <TextBox Text="{Binding BulkDelayMs, Converter={x:Static vm:IntTextConverter.Instance}}"
+                                                     Width="76"/>
+                                            <TextBlock Text="ms" Classes="hint" VerticalAlignment="Center"/>
+                                            <Button Classes="small" Content="Apply to all"
+                                                    Command="{Binding SetAllDelaysCommand}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="3" Background="{DynamicResource SurfaceAlt}"
+                                BorderBrush="{DynamicResource Divider}" BorderThickness="1"
+                                CornerRadius="8" IsVisible="{Binding HasSteps}">
+                            <Grid RowDefinitions="Auto,*,Auto">
+                                <Border Grid.Row="0" Background="{DynamicResource Surface}"
+                                        CornerRadius="8,8,0,0" MinHeight="34">
+                                    <Grid ColumnDefinitions="40,132,*,92,74,74,54" Margin="14,0">
+                                        <TextBlock Grid.Column="0" Classes="colhead" Text="#"/>
+                                        <TextBlock Grid.Column="1" Classes="colhead" Text="TYPE"/>
+                                        <TextBlock Grid.Column="2" Classes="colhead" Text="POSITION"/>
+                                        <TextBlock Grid.Column="3" Classes="colhead" Text="DELAY (MS)"/>
+                                        <TextBlock Grid.Column="4" Classes="colhead" Text="HOLD"/>
+                                        <TextBlock Grid.Column="5" Classes="colhead" Text="BUTTON"/>
+                                        <TextBlock Grid.Column="6" Classes="colhead" Text="ON"/>
+                                    </Grid>
+                                </Border>
+
+                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                    <ListBox ItemsSource="{Binding Timeline}"
+                                             SelectedItem="{Binding SelectedStep}"
+                                             Background="Transparent" BorderThickness="0">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:StepRow">
+                                                <Grid ColumnDefinitions="40,132,*,92,74,74,54"
+                                                      MinHeight="38" Margin="14,0">
+                                                    <TextBlock Grid.Column="0" Text="{Binding Number}" Classes="cellmuted"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding TypeLabel}" Classes="cell"/>
+                                                    <TextBlock Grid.Column="2" Text="{Binding PositionText}" Classes="cellmuted"/>
+                                                    <TextBox Grid.Column="3" Text="{Binding DelayMs, Converter={x:Static vm:IntTextConverter.Instance}}"
+                                                             Width="78" HorizontalAlignment="Left"
+                                                             VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="4" Text="{Binding HoldText}" Classes="cellmuted"/>
+                                                    <TextBlock Grid.Column="5" Text="{Binding ButtonText}" Classes="cellmuted"/>
+                                                    <CheckBox Grid.Column="6" IsChecked="{Binding IsEnabled}"
+                                                              VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </ScrollViewer>
+
+                                <Border Grid.Row="2" Background="{DynamicResource Surface}"
+                                        CornerRadius="0,0,8,8" Padding="14,7">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Classes="hint"
+                                                   Text="Select a row to edit it in the step editor."/>
+                                        <TextBlock Grid.Column="1" Classes="hint"
+                                                   Text="{Binding TotalDurationText}"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="3" IsVisible="{Binding !HasSteps}"
+                                Background="{DynamicResource SurfaceAlt}"
+                                BorderBrush="{DynamicResource Divider}" BorderThickness="1"
+                                CornerRadius="8">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                        Spacing="14" MaxWidth="360">
+                                <TextBlock Text="⊹" FontSize="38" HorizontalAlignment="Center"
+                                           Foreground="{DynamicResource TextMuted}"/>
+                                <TextBlock Text="No actions yet" FontSize="15" FontWeight="Bold"
+                                           HorizontalAlignment="Center" Foreground="{DynamicResource TextMain}"/>
+                                <TextBlock Classes="hint" TextAlignment="Center"
+                                           Text="Record your mouse actions, or add actions manually to build your sequence."/>
+                                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                                    <Button Classes="record" Content="● Start recording"
+                                            Command="{Binding RecordCommand}" IsEnabled="{Binding !IsRecording}"/>
+                                    <Button Content="+ Add action" Command="{Binding AddStepCommand}"
+                                            IsEnabled="{Binding CanEdit}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto"
+                              IsVisible="{Binding IsThreeColumn}">
+                    <StackPanel Spacing="14" Margin="14,0,0,8">
+
+                        <Border Classes="panel" IsVisible="{Binding ShowPropertiesPanel}">
+                            <StackPanel Spacing="12">
+                                <TextBlock Classes="section" Text="STEP EDITOR"/>
+
+                                <StackPanel Spacing="12" IsVisible="{Binding !HasSelection}"
+                                            Margin="0,22,0,26">
+                                    <TextBlock Text="⌖" FontSize="34" HorizontalAlignment="Center"
+                                               Foreground="{DynamicResource TextMuted}"/>
+                                    <TextBlock Text="No action selected" FontSize="13" FontWeight="Bold"
+                                               HorizontalAlignment="Center" Foreground="{DynamicResource TextMain}"/>
+                                    <TextBlock Classes="hint" TextAlignment="Center"
+                                               Text="Select a timeline row to edit its position, timing, click type and hold duration."/>
+                                </StackPanel>
+
+                                <StackPanel Spacing="11"
+                                            IsVisible="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).HasSelection}"
+                                            DataContext="{Binding SelectedStep}">
+
+                                    <Grid ColumnDefinitions="78,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="10">
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Action" Classes="cell"/>
+                                        <ComboBox Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch"
+                                                  ItemsSource="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ActionTypeOptions}"
+                                                  SelectedItem="{Binding Type}"/>
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Position" Classes="cell"/>
+                                        <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,*" ColumnSpacing="7">
+                                            <TextBox Grid.Column="0" Text="{Binding X, Converter={x:Static vm:DoubleTextConverter.Instance}}" ToolTip.Tip="X"/>
+                                            <TextBox Grid.Column="1" Text="{Binding Y, Converter={x:Static vm:DoubleTextConverter.Instance}}" ToolTip.Tip="Y"/>
+                                        </Grid>
+
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Delay" Classes="cell"/>
+                                        <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*,Auto">
+                                            <TextBox Grid.Column="0" Text="{Binding DelayMs, Converter={x:Static vm:IntTextConverter.Instance}}"/>
+                                            <TextBlock Grid.Column="1" Text="ms" Classes="hint"
+                                                       VerticalAlignment="Center" Margin="7,0,0,0"/>
+                                        </Grid>
+
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Hold" Classes="cell"/>
+                                        <Grid Grid.Row="3" Grid.Column="1" ColumnDefinitions="*,Auto">
+                                            <TextBox Grid.Column="0" Text="{Binding HoldMs, Converter={x:Static vm:IntTextConverter.Instance}}"/>
+                                            <TextBlock Grid.Column="1" Text="ms" Classes="hint"
+                                                       VerticalAlignment="Center" Margin="7,0,0,0"/>
+                                        </Grid>
+
+                                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Button" Classes="cell"/>
+                                        <ComboBox Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch"
+                                                  ItemsSource="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).MouseButtonOptions}"
+                                                  SelectedItem="{Binding Button}"/>
+
+                                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Clicks" Classes="cell"/>
+                                        <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding ClickCount, Converter={x:Static vm:IntTextConverter.Instance}}"
+                                                 HorizontalAlignment="Stretch"
+                                                 ToolTip.Tip="1 for single, 2 for double"/>
+
+                                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Scroll" Classes="cell"/>
+                                        <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding ScrollAmount, Converter={x:Static vm:IntTextConverter.Instance}}"
+                                                 HorizontalAlignment="Stretch"
+                                                 ToolTip.Tip="Notches. Positive is up, negative is down."/>
+                                    </Grid>
+
+                                    <Border Classes="divider"/>
+                                    <CheckBox Content="Enabled" IsChecked="{Binding IsEnabled}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="panel" IsVisible="{Binding ShowPresetsPanel}">
+                            <StackPanel Spacing="12">
+                                <TextBlock Classes="section" Text="PRESETS"/>
+
+                                <StackPanel Spacing="7">
+                                    <TextBlock Text="Preset name" Classes="hint"/>
+                                    <TextBox Text="{Binding PresetName}" HorizontalAlignment="Stretch"/>
+                                </StackPanel>
+
+                                <Grid ColumnDefinitions="*,*">
+                                    <Button Grid.Column="0" Classes="small" Content="Save changes"
+                                            HorizontalAlignment="Stretch" Margin="0,0,4,0"
+                                            Command="{Binding SaveChangesCommand}"
+                                            IsEnabled="{Binding HasLoadedPreset}"
+                                            Classes.flash="{Binding SaveFlash}"
+                                            ToolTip.Tip="Overwrite the preset that is currently open"/>
+                                    <Button Grid.Column="1" Classes="small" Content="Save as new"
+                                            HorizontalAlignment="Stretch" Margin="4,0,0,0"
+                                            Command="{Binding SavePresetCommand}"
+                                            ToolTip.Tip="Create a new preset from the current timeline"/>
+                                </Grid>
+
+                                <Button Classes="small" Content="Rename to the name above"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{Binding RenamePresetCommand}"
+                                        IsEnabled="{Binding HasLoadedPreset}"/>
+
+                                <Border Classes="divider"/>
+
+                                <TextBlock Text="Saved presets" Classes="hint"/>
+
+                                <TextBlock Classes="hint" IsVisible="{Binding !HasPresets}"
+                                           Text="No presets saved yet."/>
+
+                                <Border Background="{DynamicResource SurfaceAlt}" CornerRadius="8"
+                                        IsVisible="{Binding HasPresets}">
+                                    <ListBox ItemsSource="{Binding PresetEntries}"
+                                             SelectedItem="{Binding SelectedEntry}"
+                                             Background="Transparent" BorderThickness="0"
+                                             MaxHeight="190">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:PresetEntry">
+                                                <Grid ColumnDefinitions="Auto,*,Auto" MinHeight="42" Margin="8,0">
+                                                    <Button Grid.Column="0" Classes="icon"
+                                                            Content="{Binding Star}"
+                                                            Background="Transparent"
+                                                            Foreground="{DynamicResource Amber}"
+                                                            VerticalAlignment="Center"
+                                                            Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ToggleFavoriteCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            ToolTip.Tip="Favorite"/>
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center"
+                                                                Margin="4,0,0,0">
+                                                        <TextBlock Text="{Binding Name}" Classes="cell"/>
+                                                        <TextBlock Text="{Binding Description}" Classes="hint"/>
+                                                    </StackPanel>
+
+                                                    <Button Grid.Column="2" Classes="icon" Content="•••"
+                                                            Background="Transparent" VerticalAlignment="Center"
+                                                            ToolTip.Tip="More">
+                                                        <Button.Flyout>
+                                                            <MenuFlyout>
+                                                                <MenuItem Header="Load"
+                                                                          Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).LoadPresetCommand}"/>
+                                                                <MenuItem Header="Append to timeline"
+                                                                          Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).AppendPresetCommand}"/>
+                                                                <Separator/>
+                                                                <MenuItem Header="Toggle favorite"
+                                                                          Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ToggleFavoriteCommand}"
+                                                                          CommandParameter="{Binding}"/>
+                                                                <Separator/>
+                                                                <MenuItem Header="Delete"
+                                                                          Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).DeletePresetCommand}"/>
+                                                            </MenuFlyout>
+                                                        </Button.Flyout>
+                                                    </Button>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Border>
+
+                                <Button Classes="small" Content="Load selected"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{Binding LoadPresetCommand}"
+                                        Classes.flash="{Binding LoadFlash}"/>
+
+                                <TextBlock Classes="hint" IsVisible="{Binding ShowHints}"
+                                           Text="Click a star to favorite. Use the ••• menu for append and delete."/>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto" IsVisible="{Binding IsStacked}">
+                <StackPanel Spacing="16" MaxWidth="620" HorizontalAlignment="Center" Margin="24,28">
+
+                    <Border Classes="panel">
+                        <StackPanel Spacing="16">
+
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                    <Border Width="9" Height="9" CornerRadius="5"
+                                            Background="{Binding StatusColor}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding StatusText}" Classes="cell" FontWeight="Bold"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Text="{Binding ElapsedText}" Classes="cellmuted"/>
+                            </Grid>
+
+                            <TextBlock Classes="hint" Text="{Binding Log}"/>
+
+                            <Border Classes="divider"/>
+
+                            <UniformGrid Columns="2">
+                                <Button Classes="record" Content="● Record" Margin="0,0,5,0"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{Binding RecordCommand}" IsEnabled="{Binding !IsRecording}"/>
+                                <Button Content="■ Stop Recording" Margin="5,0,0,0"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{Binding StopRecordingButtonCommand}"
+                                        IsEnabled="{Binding IsRecording}"/>
+                            </UniformGrid>
+
+                            <UniformGrid Columns="3">
+                                <Button Classes="primary" Content="► Start" Margin="0,0,4,0"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}"/>
+                                <Button Classes="pause" Content="{Binding PauseButtonLabel}" Margin="4,0,4,0"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{Binding TogglePauseCommand}" IsEnabled="{Binding IsRunning}"/>
+                                <Button Content="■ Stop" Margin="4,0,0,0"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{Binding StopCommand}" IsEnabled="{Binding IsRunning}"/>
+                            </UniformGrid>
+                        </StackPanel>
+                    </Border>
+
+                    <Grid ColumnDefinitions="*,*">
+
+                        <Border Grid.Column="0" Classes="panel" Margin="0,0,8,0">
+                            <StackPanel Spacing="12">
+                                <TextBlock Classes="section" Text="PLAYBACK"/>
+
+                                <Grid ColumnDefinitions="64,*" RowDefinitions="Auto,Auto" RowSpacing="10">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Repeat" Classes="cell"/>
+                                    <Grid Grid.Row="0" Grid.Column="1" ColumnDefinitions="*,Auto">
+                                        <ComboBox Grid.Column="0" HorizontalAlignment="Stretch"
+                                                  ItemsSource="{Binding LoopOptions}" SelectedItem="{Binding SelectedLoop}"
+                                                  IsVisible="{Binding !IsCustomLoop}"/>
+                                        <TextBox Grid.Column="0" Text="{Binding CustomLoops, Converter={x:Static vm:IntTextConverter.Instance}}"
+                                                 HorizontalAlignment="Stretch" IsVisible="{Binding IsCustomLoop}"/>
+                                        <Button Grid.Column="1" Classes="small" Content="↺" Margin="6,0,0,0"
+                                                IsVisible="{Binding IsCustomLoop}"
+                                                Command="{Binding ClearCustomLoopCommand}"/>
+                                    </Grid>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Speed" Classes="cell"/>
+                                    <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,Auto">
+                                        <ComboBox Grid.Column="0" HorizontalAlignment="Stretch"
+                                                  ItemsSource="{Binding SpeedOptions}" SelectedItem="{Binding SelectedSpeed}"
+                                                  IsVisible="{Binding !IsCustomSpeed}"/>
+                                        <TextBox Grid.Column="0" Text="{Binding CustomSpeed, Converter={x:Static vm:DoubleTextConverter.Instance}}"
+                                                 HorizontalAlignment="Stretch" IsVisible="{Binding IsCustomSpeed}"/>
+                                        <Button Grid.Column="1" Classes="small" Content="↺" Margin="6,0,0,0"
+                                                IsVisible="{Binding IsCustomSpeed}"
+                                                Command="{Binding ClearCustomSpeedCommand}"/>
+                                    </Grid>
+                                </Grid>
+
+                                <CheckBox Content="Natural clicks" IsChecked="{Binding NaturalClicks}"
+                                          ToolTip.Tip="Varies timing, aim and press length each run"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="1" Classes="panel" Margin="8,0,0,0">
+                            <StackPanel Spacing="12">
+                                <TextBlock Classes="section" Text="PRESETS"/>
+
+                                <StackPanel Spacing="7">
+                                    <TextBlock Text="Preset name" Classes="hint"/>
+                                    <TextBox Text="{Binding PresetName}" HorizontalAlignment="Stretch"/>
+                                </StackPanel>
+
+                                <Button Classes="small" Content="Save as preset" HorizontalAlignment="Stretch"
+                                        Command="{Binding SavePresetCommand}"
+                                        Classes.flash="{Binding SaveFlash}"/>
+
+                                <StackPanel Spacing="7">
+                                    <TextBlock Text="Saved presets" Classes="hint"/>
+                                    <ComboBox ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}"
+                                              HorizontalAlignment="Stretch" PlaceholderText="Select preset"/>
+                                </StackPanel>
+
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Button Grid.Column="0" Classes="small" Content="Load"
+                                            HorizontalAlignment="Stretch" Margin="0,0,8,0"
+                                            Command="{Binding LoadPresetCommand}"
+                                            Classes.flash="{Binding LoadFlash}"/>
+                                    <Button Grid.Column="1" Classes="small danger" Content="Delete"
+                                            Command="{Binding DeletePresetCommand}"
+                                            Classes.flash="{Binding DeleteFlash}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <Border Classes="panel" IsVisible="{Binding !HasSteps}">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Nothing recorded yet" Classes="cell" HorizontalAlignment="Center"/>
+                            <TextBlock Classes="hint" TextAlignment="Center"
+                                       Text="Press Record, perform your mouse actions, then press Stop Recording when finished."/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="panel" IsVisible="{Binding HasSteps}">
+                        <StackPanel Spacing="8">
+                            <TextBlock Classes="cell" HorizontalAlignment="Center" Text="{Binding TimelineSummary}"/>
+                            <TextBlock Classes="hint" TextAlignment="Center" IsVisible="{Binding ShowHints}"
+                                       Text="Switch to Advanced for the timeline editor, hotkeys and per-step settings."/>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Panel>
+
+        <Border Grid.Row="2" Classes="bar" BorderThickness="0,1,0,0" Padding="22,8">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="7">
+                    <Border Width="8" Height="8" CornerRadius="4"
+                            Background="{Binding StatusColor}" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding StatusText}" Classes="statuskey"/>
+                </StackPanel>
+
+                <TextBlock Grid.Column="1" Classes="statuskey" Margin="22,0,0,0"
+                           Text="{Binding PresetName, StringFormat='Preset: {0}'}"/>
+
+                <TextBlock Grid.Column="2" Classes="statuskey" Margin="22,0,0,0">
+                    <Run Text="{Binding LoadedCount}" Foreground="{DynamicResource Accent}" FontWeight="Bold"/><Run Text=" actions"/>
                 </TextBlock>
-            </StackPanel>
-            <Button Grid.Column="1" Classes="icon"
-                    Content="{Binding IsDark, Converter={x:Static vm:ThemeIconConverter.Instance}}"
-                    Command="{Binding ToggleThemeCommand}"
-                    VerticalAlignment="Center"/>
-        </Grid>
 
-        <Border Classes="divider"/>
+                <TextBlock Grid.Column="3" Classes="statuskey" Margin="22,0,0,0"
+                           Text="{Binding LoopProgress}"/>
 
-        <!-- Playback -->
-        <TextBlock Classes="section" Text="PLAYBACK"/>
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Classes="label" Text="Repeat"/>
-            <ComboBox ItemsSource="{Binding LoopOptions}" SelectedItem="{Binding SelectedLoop}" Width="110"/>
-            <TextBox Text="{Binding CustomLoops}" Width="60" PlaceholderText="times" IsVisible="{Binding IsCustomLoop}"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Classes="label" Text="Speed"/>
-            <ComboBox ItemsSource="{Binding SpeedOptions}" SelectedItem="{Binding SelectedSpeed}" Width="110"/>
-            <TextBox Text="{Binding CustomSpeed}" Width="60" PlaceholderText="x" IsVisible="{Binding IsCustomSpeed}"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Classes="label" Text="Loop pauses"/>
-            <CheckBox IsChecked="{Binding RemoveDelays}"/>
-        </StackPanel>
+                <TextBlock Grid.Column="5" Classes="statuskey"
+                           Text="{Binding SpeedLabel, StringFormat='Speed: {0}'}"/>
+            </Grid>
+        </Border>
 
-        <Border Classes="divider"/>
-
-        <!-- Hotkeys -->
-        <TextBlock Classes="section" Text="HOTKEYS"/>
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Classes="label" Text="Stop"/>
-            <TextBlock Text="{Binding StopKeyName}" Foreground="{DynamicResource Accent}" FontWeight="Bold" VerticalAlignment="Center" Width="60"/>
-            <Button Content="Set" Command="{Binding CaptureStopKeyCommand}"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Classes="label" Text="Pause/Resume"/>
-            <TextBlock Text="{Binding PauseKeyName}" Foreground="{DynamicResource Accent}" FontWeight="Bold" VerticalAlignment="Center" Width="60"/>
-            <Button Content="Set" Command="{Binding CapturePauseKeyCommand}"/>
-        </StackPanel>
-
-        <Border Classes="divider"/>
-
-        <!-- Presets -->
-        <TextBlock Classes="section" Text="PRESETS"/>
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Classes="label" Text="Save as"/>
-            <TextBox Text="{Binding PresetName}" Width="110"/>
-            <Button Content="Save" Command="{Binding SavePresetCommand}"
-                    Classes.flash="{Binding SaveFlash}"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Classes="label" Text="Load"/>
-            <ComboBox ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}" Width="110"/>
-            <Button Content="Load" Command="{Binding LoadPresetCommand}"
-                    Classes.flash="{Binding LoadFlash}"/>
-            <Button Content="Delete" Classes="danger" Command="{Binding DeletePresetCommand}"
-                    Classes.flash="{Binding DeleteFlash}"/>
-        </StackPanel>
-
-        <Border Classes="divider"/>
-
-        <!-- Loaded indicator -->
-        <TextBlock Foreground="{DynamicResource TextMuted}" FontSize="12">
-            <Run Text="Loaded:"/><Run Text=" "/><Run Text="{Binding LoadedCount}" Foreground="{DynamicResource Accent}" FontWeight="Bold"/><Run Text=" clicks"/>
-        </TextBlock>
-
-        <!-- Controls -->
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <Button Classes="record" Content="● Record"
-                    Command="{Binding RecordCommand}" IsEnabled="{Binding !IsRecording}"/>
-            <Button Content="■ Stop Rec"
-                    Command="{Binding StopRecordingButtonCommand}" IsEnabled="{Binding IsRecording}"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <Button Classes="primary" Content="► Start"
-                    Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}"/>
-            <Button Content="■ Stop"
-                    Command="{Binding StopCommand}" IsEnabled="{Binding IsRunning}"/>
-            <Border Width="6" CornerRadius="3" Background="{Binding StatusColor}" VerticalAlignment="Stretch"/>
-        </StackPanel>
-
-        <!-- Log -->
-        <StackPanel Orientation="Horizontal" Spacing="10">
-            <Border Width="4" CornerRadius="2" Background="{Binding StatusColor}" VerticalAlignment="Stretch"/>
-            <TextBlock Text="{Binding Log}" Foreground="{DynamicResource TextMuted}" FontFamily="monospace" TextWrapping="Wrap" VerticalAlignment="Center"/>
-        </StackPanel>
-
-    </StackPanel>
-
+    </Grid>
 </Window>
