@@ -222,6 +222,17 @@
 
                 <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8"
                             VerticalAlignment="Center" IsVisible="{Binding IsAdvanced}">
+                    <Button Classes="small" Content="Import"
+                            Command="{Binding ImportTimelineCommand}"
+                            IsEnabled="{Binding CanEdit}"
+                            ToolTip.Tip="Load a sequence file into the timeline"/>
+                    <Button Classes="small" Content="Export"
+                            Command="{Binding ExportTimelineCommand}"
+                            IsEnabled="{Binding HasSteps}"
+                            ToolTip.Tip="Save the timeline as a shareable file"/>
+
+                    <Border Classes="vsep" Margin="4,4"/>
+
                     <TextBlock Text="Layout" Classes="hint" VerticalAlignment="Center"/>
                     <ComboBox ItemsSource="{Binding LayoutOptions}"
                               SelectedItem="{Binding SelectedLayout}" Width="130"/>
@@ -352,7 +363,7 @@
                                                   IsVisible="{Binding !IsCustomLoop}"/>
                                         <TextBox Grid.Column="0" Text="{Binding CustomLoops, Converter={x:Static vm:IntTextConverter.Instance}}"
                                                  HorizontalAlignment="Stretch" IsVisible="{Binding IsCustomLoop}"/>
-                                        <Button Grid.Column="1" Classes="small" Content="↺" Margin="6,0,0,0"
+                                        <Button Grid.Column="1" Classes="small" Content="List" Margin="6,0,0,0"
                                                 IsVisible="{Binding IsCustomLoop}"
                                                 Command="{Binding ClearCustomLoopCommand}"
                                                 ToolTip.Tip="Back to the preset list"/>
@@ -365,7 +376,7 @@
                                                   IsVisible="{Binding !IsCustomSpeed}"/>
                                         <TextBox Grid.Column="0" Text="{Binding CustomSpeed, Converter={x:Static vm:DoubleTextConverter.Instance}}"
                                                  HorizontalAlignment="Stretch" IsVisible="{Binding IsCustomSpeed}"/>
-                                        <Button Grid.Column="1" Classes="small" Content="↺" Margin="6,0,0,0"
+                                        <Button Grid.Column="1" Classes="small" Content="List" Margin="6,0,0,0"
                                                 IsVisible="{Binding IsCustomSpeed}"
                                                 Command="{Binding ClearCustomSpeedCommand}"
                                                 ToolTip.Tip="Back to the preset list"/>
@@ -509,22 +520,22 @@
                             <Button Classes="small" Content="+ Delay" Command="{Binding AddDelayStepCommand}"
                                     IsEnabled="{Binding CanEdit}" ToolTip.Tip="Insert a wait with no click"/>
                             <Border Classes="vsep"/>
-                            <Button Classes="small" Content="↑" Command="{Binding MoveStepUpCommand}"
+                            <Button Classes="small" Content="Up" Command="{Binding MoveStepUpCommand}"
                                     IsEnabled="{Binding HasSelection}" ToolTip.Tip="Move up"/>
-                            <Button Classes="small" Content="↓" Command="{Binding MoveStepDownCommand}"
+                            <Button Classes="small" Content="Down" Command="{Binding MoveStepDownCommand}"
                                     IsEnabled="{Binding HasSelection}" ToolTip.Tip="Move down"/>
-                            <Button Classes="small" Content="⧉ Duplicate" Command="{Binding DuplicateStepCommand}"
+                            <Button Classes="small" Content="Duplicate" Command="{Binding DuplicateStepCommand}"
                                     IsEnabled="{Binding HasSelection}"/>
-                            <Button Classes="small" Content="⊘ Mute" Command="{Binding ToggleMuteStepCommand}"
+                            <Button Classes="small" Content="Mute" Command="{Binding ToggleMuteStepCommand}"
                                     IsEnabled="{Binding HasSelection}"/>
-                            <Button Classes="small danger" Content="🗑 Delete" Command="{Binding DeleteStepCommand}"
+                            <Button Classes="small danger" Content="Delete" Command="{Binding DeleteStepCommand}"
                                     IsEnabled="{Binding HasSelection}"/>
                             <Border Classes="vsep"/>
-                            <Button Classes="small" Content="⇤ Trim" Command="{Binding TrimBeforeCommand}"
+                            <Button Classes="small" Content="Trim start" Command="{Binding TrimBeforeCommand}"
                                     IsEnabled="{Binding HasSelection}" ToolTip.Tip="Delete everything before this step"/>
-                            <Button Classes="small" Content="Trim ⇥" Command="{Binding TrimAfterCommand}"
+                            <Button Classes="small" Content="Trim end" Command="{Binding TrimAfterCommand}"
                                     IsEnabled="{Binding HasSelection}" ToolTip.Tip="Delete everything after this step"/>
-                            <Button Classes="small danger" Content="✕ Clear" Command="{Binding ClearTimelineCommand}"
+                            <Button Classes="small danger" Content="Clear" Command="{Binding ClearTimelineCommand}"
                                     IsEnabled="{Binding HasSteps}"/>
                         </WrapPanel>
 
@@ -537,9 +548,9 @@
 
                                 <Grid ColumnDefinitions="*,Auto,Auto">
                                     <UniformGrid Grid.Column="0" Rows="1" Columns="4">
-                                        <Button Classes="small" Content="✓ Enable all" Margin="0,0,5,0"
+                                        <Button Classes="small" Content="Enable all" Margin="0,0,5,0"
                                                 Command="{Binding EnableAllCommand}"/>
-                                        <Button Classes="small" Content="✕ Disable all" Margin="5,0"
+                                        <Button Classes="small" Content="Disable all" Margin="5,0"
                                                 Command="{Binding DisableAllCommand}"/>
                                         <Button Classes="small" Content="− 10 ms" Margin="5,0"
                                                 Command="{Binding NudgeFasterCommand}"
@@ -864,7 +875,7 @@
                                                   IsVisible="{Binding !IsCustomLoop}"/>
                                         <TextBox Grid.Column="0" Text="{Binding CustomLoops, Converter={x:Static vm:IntTextConverter.Instance}}"
                                                  HorizontalAlignment="Stretch" IsVisible="{Binding IsCustomLoop}"/>
-                                        <Button Grid.Column="1" Classes="small" Content="↺" Margin="6,0,0,0"
+                                        <Button Grid.Column="1" Classes="small" Content="List" Margin="6,0,0,0"
                                                 IsVisible="{Binding IsCustomLoop}"
                                                 Command="{Binding ClearCustomLoopCommand}"/>
                                     </Grid>
@@ -876,7 +887,7 @@
                                                   IsVisible="{Binding !IsCustomSpeed}"/>
                                         <TextBox Grid.Column="0" Text="{Binding CustomSpeed, Converter={x:Static vm:DoubleTextConverter.Instance}}"
                                                  HorizontalAlignment="Stretch" IsVisible="{Binding IsCustomSpeed}"/>
-                                        <Button Grid.Column="1" Classes="small" Content="↺" Margin="6,0,0,0"
+                                        <Button Grid.Column="1" Classes="small" Content="List" Margin="6,0,0,0"
                                                 IsVisible="{Binding IsCustomSpeed}"
                                                 Command="{Binding ClearCustomSpeedCommand}"/>
                                     </Grid>

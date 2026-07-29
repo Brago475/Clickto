@@ -1619,6 +1619,67 @@ public partial class MainWindowViewModel : ViewModelBase
         Log = $"Appended {steps.Count} actions from '{SelectedPreset}'.";
     }
 
+    /// <summary>
+    /// Set by the view so the ViewModel can open file dialogs without
+    /// referencing the window directly.
+    /// </summary>
+    public Func<string, Task<string?>>? RequestSavePath { get; set; }
+    public Func<Task<string?>>? RequestOpenPath { get; set; }
+
+    /// <summary>Writes the current timeline to a file the user picks.</summary>
+    [RelayCommand]
+    private async Task ExportTimeline()
+    {
+        if (Timeline.Count == 0) { Log = "Nothing to export."; return; }
+        if (RequestSavePath == null) { Log = "Export is unavailable."; return; }
+
+        string suggested = string.IsNullOrWhiteSpace(PresetName) ? "clickto" : PresetName;
+        var path = await RequestSavePath(suggested + ".json");
+        if (string.IsNullOrWhiteSpace(path)) return;
+
+        try
+        {
+            PresetService.ExportTo(path, Timeline.Select(r => r.ToStep()).ToList());
+            Log = $"Exported {Timeline.Count} actions.";
+        }
+        catch (Exception ex)
+        {
+            Log = $"Export failed: {ex.Message}";
+        }
+    }
+
+    /// <summary>Loads a sequence file into the timeline.</summary>
+    [RelayCommand]
+    private async Task ImportTimeline()
+    {
+        if (!CanEdit) return;
+        if (RequestOpenPath == null) { Log = "Import is unavailable."; return; }
+
+        var path = await RequestOpenPath();
+        if (string.IsNullOrWhiteSpace(path)) return;
+
+        var steps = PresetService.ImportFrom(path);
+        if (steps == null)
+        {
+            Log = "That file is not a Clickto sequence.";
+            return;
+        }
+
+        if (steps.Count == 0)
+        {
+            Log = "That file contains no actions.";
+            return;
+        }
+
+        LoadTimeline(steps);
+
+        // Imported work is not tied to a saved preset until it is saved.
+        LoadedPresetName = null;
+        PresetName = System.IO.Path.GetFileNameWithoutExtension(path);
+
+        Log = $"Imported {steps.Count} actions from '{PresetName}'.";
+    }
+
     [RelayCommand]
     private void SavePreset()
     {

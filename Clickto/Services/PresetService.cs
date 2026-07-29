@@ -55,6 +55,36 @@ public static class PresetService
             File.Delete(path);
     }
 
+    /// <summary>Write a sequence to any path the user picked.</summary>
+    public static void ExportTo(string path, List<ClickStep> steps)
+    {
+        var json = JsonSerializer.Serialize(steps, Options);
+        File.WriteAllText(path, json);
+    }
+
+    /// <summary>
+    /// Read a sequence from any path. Returns null when the file is not a
+    /// valid Clickto sequence, so the caller can report it rather than
+    /// silently loading nothing.
+    /// </summary>
+    public static List<ClickStep>? ImportFrom(string path)
+    {
+        try
+        {
+            if (!File.Exists(path)) return null;
+            var json = File.ReadAllText(path);
+            return JsonSerializer.Deserialize<List<ClickStep>>(json);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>True when a preset with this name already exists.</summary>
+    public static bool Exists(string name)
+        => File.Exists(Path.Combine(PresetsFolder, name + ".json"));
+
     /// <summary>List preset names (without the .json extension).</summary>
     public static List<string> ListPresets()
     {
